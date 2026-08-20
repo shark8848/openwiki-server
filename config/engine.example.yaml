@@ -1,0 +1,28 @@
+# OpenWiki Server 配置样例（环境变量优先）
+# 环境变量：OPENWIKI_SERVER_DATA_DIR / OPENWIKI_SERVER_DB_PATH /
+#           OPENWIKI_SERVER_HTTP_HOST / OPENWIKI_SERVER_HTTP_PORT /
+#           OPENWIKI_SERVER_GRPC_HOST / OPENWIKI_SERVER_GRPC_PORT /
+#           OPENWIKI_SERVER_CELERY_BROKER / OPENWIKI_SERVER_CELERY_BACKEND /
+#           OPENWIKI_SERVER_MCP_TRANSPORT / OPENWIKI_SERVER_LOG_LEVEL /
+#           OPENWIKI_SERVER_OPENWIKI_BIN / OPENWIKI_SERVER_OPENWIKI（0 关闭内核）/
+#           OPENWIKI_SERVER_PROVIDER / OPENWIKI_SERVER_MODEL_ID
+
+data_dir: data
+db_path: ""
+http:
+  host: 0.0.0.0
+  port: 18011
+grpc:
+  host: 0.0.0.0
+  port: 50052
+celery:
+  broker: redis://localhost:6379/0
+  backend: redis://localhost:6379/0
+mcp:
+  transport: stdio
+openwiki:
+  bin: ""
+  enabled: true
+  provider: openai
+  model_id: ""
+  update_timeout: 600

@@ -1,0 +1,83 @@
+# openwiki-server Docker 栈：单镜像（Python 引擎 + Node openwiki 内核 + HAProxy 代理层同容器）
+#
+# 使用：
+#   1) bash scripts/build_docker.sh                 # 构建镜像
+#   2) docker compose up -d                         # 启动（API + HAProxy）
+#   3) curl -s http://127.0.0.1:18011/health        # 经 HAProxy 健康检查
+#   4) HAProxy stats: http://127.0.0.1:8404/（账号 HAPROXY_STATS_USER / HAPROXY_STATS_PASSWORD）
+#   5) 启用 Celery worker：docker compose --profile worker up -d
+#
+# 拓扑：宿主机 -> HAProxy(:8080 HTTP / :50052 gRPC / :8404 stats)
+#                 -> uvicorn(127.0.0.1:18011，仅回环) + gRPC(127.0.0.1:50052，仅回环)
+# 升级旧镜像：先 bash scripts/build_docker.sh，再 docker compose up -d --build（避免复用旧 tag 镜像）
+# 生产必改：HAPROXY_STATS_PASSWORD；LLM 内核需配置 OPENWIKI_SERVER_PROVIDER / MODEL_ID 与凭据。
+
+name: openwiki-server
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: openwiki-server:1.0.0
+    restart: unless-stopped
+    environment:
+      # 运行数据（SQLite 默认 /app/data/engine.db，挂载卷持久化）
+      OPENWIKI_SERVER_DATA_DIR: "${OPENWIKI_SERVER_DATA_DIR:-/app/data}"
+      # openwiki 内核：1 启用（LLM 不可用自动降级规则切页）；0 强制离线规则模式
+      OPENWIKI_SERVER_OPENWIKI: "${OPENWIKI_SERVER_OPENWIKI:-1}"
+      OPENWIKI_SERVER_PROVIDER: "${OPENWIKI_SERVER_PROVIDER:-openai}"
+      OPENWIKI_SERVER_MODEL_ID: "${OPENWIKI_SERVER_MODEL_ID:-}"
+      OPENWIKI_SERVER_UPDATE_TIMEOUT: "${OPENWIKI_SERVER_UPDATE_TIMEOUT:-600}"
+      OPENWIKI_SERVER_LOG_LEVEL: "${OPENWIKI_SERVER_LOG_LEVEL:-INFO}"
+      # Celery（默认指向 compose redis；未启用 worker 时不会主动连接）
+      OPENWIKI_SERVER_CELERY_BROKER: "${OPENWIKI_SERVER_CELERY_BROKER:-redis://redis:6379/0}"
+      OPENWIKI_SERVER_CELERY_BACKEND: "${OPENWIKI_SERVER_CELERY_BACKEND:-redis://redis:6379/0}"
+      # HAProxy stats 登录账号（默认 admin / change-me，生产必改）
+      HAPROXY_STATS_USER: "${HAPROXY_STATS_USER:-admin}"
+      HAPROXY_STATS_PASSWORD: "${HAPROXY_STATS_PASSWORD:-change-me}"
+    ports:
+      - "${OPENWIKI_HTTP_PORT:-18011}:8080"
+      - "${OPENWIKI_GRPC_PORT:-50052}:50052"
+      - "${HAPROXY_STATS_PORT:-8404}:8404"
+    volumes:
+      - app_data:/app/data
+    healthcheck:
+      # 经 HAProxy 探测（端到端：HAProxy -> uvicorn 127.0.0.1:18011）
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8080/health', timeout=3)"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 20s
+
+  # Celery broker/backend（仅 worker profile 启用时启动）
+  redis:
+    image: redis:7-alpine
+    profiles: ["worker"]
+    restart: unless-stopped
+    volumes:
+      - redis_data:/data
+
+  # Celery worker（与 app 共用同一镜像与数据卷；启用：docker compose --profile worker up -d）
+  worker:
+    image: openwiki-server:1.0.0
+    profiles: ["worker"]
+    restart: unless-stopped
+    command: ["worker"]
+    environment:
+      OPENWIKI_SERVER_DATA_DIR: "${OPENWIKI_SERVER_DATA_DIR:-/app/data}"
+      OPENWIKI_SERVER_OPENWIKI: "${OPENWIKI_SERVER_OPENWIKI:-1}"
+      OPENWIKI_SERVER_PROVIDER: "${OPENWIKI_SERVER_PROVIDER:-openai}"
+      OPENWIKI_SERVER_MODEL_ID: "${OPENWIKI_SERVER_MODEL_ID:-}"
+      OPENWIKI_SERVER_UPDATE_TIMEOUT: "${OPENWIKI_SERVER_UPDATE_TIMEOUT:-600}"
+      OPENWIKI_SERVER_LOG_LEVEL: "${OPENWIKI_SERVER_LOG_LEVEL:-INFO}"
+      OPENWIKI_SERVER_CELERY_BROKER: "${OPENWIKI_SERVER_CELERY_BROKER:-redis://redis:6379/0}"
+      OPENWIKI_SERVER_CELERY_BACKEND: "${OPENWIKI_SERVER_CELERY_BACKEND:-redis://redis:6379/0}"
+    volumes:
+      - app_data:/app/data
+    depends_on:
+      - redis
+
+volumes:
+  app_data:
+  redis_data:

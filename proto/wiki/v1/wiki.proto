@@ -1,0 +1,35 @@
+syntax = "proto3";
+
+package wiki.v1;
+
+// OpenWiki Server gRPC 契约（MVP）
+//
+// 所有 RPC 均使用统一 Envelope：trace_id 透传链路、err_code/err_msg 对齐 open-ikc
+// envelope（0 成功；2xxxxx 业务错误），data_json 承载业务数据 JSON。
+// 与 HTTP /api/v1/wiki/* 语义一一对应。
+
+message Envelope {
+  string trace_id = 1;
+  string err_code = 2;
+  string err_msg = 3;
+  string data_json = 4;
+}
+
+service WikiService {
+  rpc CreateWiki(Envelope) returns (Envelope);
+  rpc GetWiki(Envelope) returns (Envelope);
+  rpc DeleteWiki(Envelope) returns (Envelope);
+  rpc ListWikis(Envelope) returns (Envelope);
+  rpc BuildWiki(Envelope) returns (Envelope);
+  rpc MergeRecords(Envelope) returns (Envelope);
+  rpc DeprecateDoc(Envelope) returns (Envelope);
+  rpc Tree(Envelope) returns (Envelope);
+  rpc Page(Envelope) returns (Envelope);
+  rpc Search(Envelope) returns (Envelope);
+  rpc Stat(Envelope) returns (Envelope);
+  rpc ExportWiki(Envelope) returns (Envelope);
+  rpc UpdateWiki(Envelope) returns (Envelope);
+  rpc Ingest(Envelope) returns (Envelope);
+  rpc RunJob(Envelope) returns (Envelope);
+  rpc GetJob(Envelope) returns (Envelope);
+}
