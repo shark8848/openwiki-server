@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import logging
 import uuid
 from dataclasses import replace
 from pathlib import Path
@@ -22,6 +23,24 @@ from ..domain.models import WikiMeta, WikiPageRecord
 from ..domain.wiki_config import validate_wiki_config
 from ..errors import InvalidParamsError, NotFoundError
 from ..persistence.sqlite_store import SqliteWikiStore
+
+logger = logging.getLogger(__name__)
+
+# Celery 任务载荷字段（HTTP 载荷 camelCase -> 任务参数 snake_case）；HTTP 专有字段（如 async）不透传
+_TASK_FIELDS: dict[str, dict[str, str]] = {
+    "build": {
+        "docId": "doc_id",
+        "title": "title",
+        "tags": "tags",
+        "markdown": "markdown",
+        "wikiConfig": "wiki_config",
+    },
+    "merge": {"pages": "pages", "docId": "doc_id"},
+    "deprecate_doc": {"docId": "doc_id"},
+    "export": {"format": "format"},
+    "update": {"message": "message"},
+    "ingest": {"connector": "connector"},
+}
 
 
 def _now_iso() -> str:
@@ -376,7 +395,40 @@ class OpenWikiService:
     ) -> dict[str, Any]:
         job_id = f"job_{uuid.uuid4().hex[:12]}"
         self.store.create_job(job_id, wiki_id_value, task, dict(payload or {}))
+        if not self._dispatch_job(job_id, task, wiki_id_value, dict(payload or {})):
+            logger.warning(
+                "job %s 未投递到 broker（broker 不可达？），保持 pending，可调用 run_job 手动执行",
+                job_id,
+            )
         return {"jobId": job_id, "wikiId": wiki_id_value, "task": task, "status": "pending"}
+
+    def _dispatch_job(
+        self, job_id: str, task: str, wiki_id_value: str, payload: dict[str, Any]
+    ) -> bool:
+        """登记后投递 Celery broker；broker 不可达时返回 False（保持 pending，可 run_job 手动执行）。"""
+        from ..interfaces.celery_app import celery_app
+
+        task_name = {
+            "build": "openwiki_server.build",
+            "merge": "openwiki_server.merge",
+            "deprecate_doc": "openwiki_server.deprecate_doc",
+            "export": "openwiki_server.export",
+            "update": "openwiki_server.update",
+            "ingest": "openwiki_server.ingest",
+        }.get(task)
+        if task_name is None:
+            return False
+        fields = _TASK_FIELDS.get(task)
+        if fields is None:
+            return False
+        kwargs = {arg: payload[key] for key, arg in fields.items() if key in payload}
+        kwargs["wiki_id"] = wiki_id_value
+        kwargs["job_id"] = job_id
+        try:
+            celery_app.send_task(task_name, kwargs=kwargs, retry=False)
+            return True
+        except Exception:
+            return False
 
     def run_job(self, job_id: str) -> dict[str, Any]:
         """同步执行已登记任务（Celery worker 与 HTTP async 复用）。"""

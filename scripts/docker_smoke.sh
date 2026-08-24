@@ -57,10 +57,11 @@ fail() {
 echo "[smoke] 1. /health 经 HAProxy"
 curl -fsS -m 5 "http://127.0.0.1:${HTTP_PORT}/health" | grep -q '"status":"ok"' || fail "/health 未就绪"
 
-echo "[smoke] 2. 创建 wiki（envelope errCode=0）"
+echo "[smoke] 2. 创建 wiki（envelope errCode=0，每次运行唯一 kbId）"
+KB_ID="kb_docker_smoke_$(date +%s)"
 CREATE=$(curl -s -m 15 -X POST "http://127.0.0.1:${HTTP_PORT}/api/v1/wiki/wikis" \
   -H "Content-Type: application/json" \
-  -d '{"kbId":"kb_docker_smoke","name":"Docker 冒烟 Wiki"}')
+  -d "{\"kbId\":\"${KB_ID}\",\"name\":\"Docker 冒烟 Wiki\"}")
 echo "$CREATE" | grep -q '"errCode":"0"' || fail "create 失败: $CREATE"
 WID=$(echo "$CREATE" | sed -n 's/.*"wikiId":"\([^"]*\)".*/\1/p')
 [[ -n "$WID" ]] || fail "create 未返回 wikiId: $CREATE"
@@ -68,7 +69,7 @@ WID=$(echo "$CREATE" | sed -n 's/.*"wikiId":"\([^"]*\)".*/\1/p')
 echo "[smoke] 3. build 建页（规则切页 total=1）"
 BUILD=$(curl -s -m 15 -X POST "http://127.0.0.1:${HTTP_PORT}/api/v1/wiki/wikis/${WID}/build" \
   -H "Content-Type: application/json" \
-  -d '{"docId":"doc1","title":"产品手册","markdown":"# 产品手册\n\n## 安装\n\n安装说明。负责人：张三"}')
+  -d '{"docId":"doc1","title":"产品手册","markdown":"产品手册正文。安装说明。负责人：张三"}')
 echo "$BUILD" | grep -q '"total":1' || fail "build 失败: $BUILD"
 
 echo "[smoke] 4. gRPC 经 HAProxy（真实调用 Stat 应 200404）"

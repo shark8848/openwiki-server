@@ -218,6 +218,45 @@ def test_jobs(svc):
     assert svc.list_jobs(wiki_id_value=wid)["total"] == 1
 
 
+def test_submit_job_dispatches_to_celery(svc, monkeypatch):
+    from openwiki_engine.interfaces import celery_app as celery_mod
+
+    sent: list[tuple[str, dict]] = []
+
+    def fake_send_task(name, **kwargs):
+        sent.append((name, kwargs))
+
+    monkeypatch.setattr(celery_mod.celery_app, "send_task", fake_send_task)
+    wid = _create(svc)["wikiId"]
+    job = svc.submit_job(
+        "build", wid, {"docId": "doc1", "title": "任务页", "markdown": "任务正文。"}
+    )
+    assert job["status"] == "pending"
+    assert len(sent) == 1
+    name, kwargs = sent[0]
+    assert name == "openwiki_server.build"
+    assert kwargs["kwargs"]["wiki_id"] == wid
+    assert kwargs["kwargs"]["job_id"] == job["jobId"]
+    assert kwargs["kwargs"]["doc_id"] == "doc1"
+    assert "async" not in kwargs["kwargs"]
+
+
+def test_submit_job_keeps_pending_when_broker_down(svc, monkeypatch):
+    from openwiki_engine.interfaces import celery_app as celery_mod
+
+    def boom(*args, **kwargs):
+        raise ConnectionRefusedError("broker 不可达")
+
+    monkeypatch.setattr(celery_mod.celery_app, "send_task", boom)
+    wid = _create(svc)["wikiId"]
+    job = svc.submit_job(
+        "build", wid, {"docId": "doc1", "title": "任务页", "markdown": "任务正文。"}
+    )
+    assert job["status"] == "pending"
+    result = svc.run_job(job["jobId"])
+    assert result["status"] == "success"
+
+
 # ---------- HTTP ----------
 
 

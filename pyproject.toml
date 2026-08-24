@@ -15,6 +15,7 @@ dependencies = [
   "grpcio>=1.81",
   "protobuf>=5.29",
   "celery>=5.3",
+  "redis>=5.0",
   "typer>=0.12",
 ]
 

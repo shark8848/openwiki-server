@@ -63,7 +63,7 @@ bash scripts/build_docker.sh
 docker compose up -d
 # 启用 Celery worker（redis + worker 一起启动）
 docker compose --profile worker up -d
-# 冒烟验证（8 项断言，--force-build 可强制重建）
+# 冒烟验证（7 项断言，--force-build 可强制重建）
 bash scripts/docker_smoke.sh
 ```
 
@@ -73,6 +73,9 @@ bash scripts/docker_smoke.sh
 - 环境变量模板：`cp docker/.env.example .env`（生产密码、端口、LLM 内核配置）。
 - `OPENWIKI_SERVER_OPENWIKI=0` 可强制离线规则切页（镜像内已含 Node 22 + openwiki 内核，
   默认启用、LLM 失败自动降级）。
+- 异步加工：build/merge 等请求带 `async=1` 时登记为 job 并经 Celery 投递（broker 不可达时
+  保持 `pending`，可调 `POST /api/v1/wiki/jobs/{job_id}/run` 手动执行；轮询
+  `GET /api/v1/wiki/jobs/{job_id}` 查看结果）。
 
 ## 五类接口
 

@@ -52,7 +52,7 @@ services:
 
   # Celery broker/backend（仅 worker profile 启用时启动）
   redis:
-    image: redis:7-alpine
+    image: redis:7.0-alpine
     profiles: ["worker"]
     restart: unless-stopped
     volumes:
