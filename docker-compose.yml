@@ -5,7 +5,7 @@
 #   2) docker compose up -d                         # 启动（API + HAProxy）
 #   3) curl -s http://127.0.0.1:18011/health        # 经 HAProxy 健康检查
 #   4) HAProxy stats: http://127.0.0.1:8404/（账号 HAPROXY_STATS_USER / HAPROXY_STATS_PASSWORD）
-#   5) 启用 Celery worker：docker compose --profile worker up -d
+#   5) 启用 Celery worker（需外部 redis）：docker compose --profile worker up -d
 #
 # 拓扑：宿主机 -> HAProxy(:8080 HTTP / :50052 gRPC / :8404 stats)
 #                 -> uvicorn(127.0.0.1:18011，仅回环) + gRPC(127.0.0.1:50052，仅回环)
@@ -16,11 +16,14 @@ name: openwiki-server
 
 services:
   app:
+    container_name: openwiki-server
     build:
       context: .
       dockerfile: Dockerfile
     image: openwiki-server:1.0.0
     restart: unless-stopped
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     environment:
       # 运行数据（SQLite 默认 /app/data/engine.db，挂载卷持久化）
       OPENWIKI_SERVER_DATA_DIR: "${OPENWIKI_SERVER_DATA_DIR:-/app/data}"
@@ -30,9 +33,9 @@ services:
       OPENWIKI_SERVER_MODEL_ID: "${OPENWIKI_SERVER_MODEL_ID:-}"
       OPENWIKI_SERVER_UPDATE_TIMEOUT: "${OPENWIKI_SERVER_UPDATE_TIMEOUT:-600}"
       OPENWIKI_SERVER_LOG_LEVEL: "${OPENWIKI_SERVER_LOG_LEVEL:-INFO}"
-      # Celery（默认指向 compose redis；未启用 worker 时不会主动连接）
-      OPENWIKI_SERVER_CELERY_BROKER: "${OPENWIKI_SERVER_CELERY_BROKER:-redis://redis:6379/0}"
-      OPENWIKI_SERVER_CELERY_BACKEND: "${OPENWIKI_SERVER_CELERY_BACKEND:-redis://redis:6379/0}"
+      # Celery broker/backend：外部 redis（默认宿主 6379；远程实例用 OPENWIKI_SERVER_CELERY_BROKER 覆盖）
+      OPENWIKI_SERVER_CELERY_BROKER: "${OPENWIKI_SERVER_CELERY_BROKER:-redis://host.docker.internal:6379/0}"
+      OPENWIKI_SERVER_CELERY_BACKEND: "${OPENWIKI_SERVER_CELERY_BACKEND:-redis://host.docker.internal:6379/0}"
       # HAProxy stats 登录账号（默认 admin / change-me，生产必改）
       HAPROXY_STATS_USER: "${HAPROXY_STATS_USER:-admin}"
       HAPROXY_STATS_PASSWORD: "${HAPROXY_STATS_PASSWORD:-change-me}"
@@ -50,19 +53,14 @@ services:
       retries: 5
       start_period: 20s
 
-  # Celery broker/backend（仅 worker profile 启用时启动）
-  redis:
-    image: redis:7.0-alpine
-    profiles: ["worker"]
-    restart: unless-stopped
-    volumes:
-      - redis_data:/data
-
-  # Celery worker（与 app 共用同一镜像与数据卷；启用：docker compose --profile worker up -d）
+  # Celery worker（与 app 共用同一镜像与数据卷；broker/backend 使用外部 redis；
+  # 启用：docker compose --profile worker up -d）
   worker:
     image: openwiki-server:1.0.0
     profiles: ["worker"]
     restart: unless-stopped
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     command: ["worker"]
     environment:
       OPENWIKI_SERVER_DATA_DIR: "${OPENWIKI_SERVER_DATA_DIR:-/app/data}"
@@ -71,13 +69,10 @@ services:
       OPENWIKI_SERVER_MODEL_ID: "${OPENWIKI_SERVER_MODEL_ID:-}"
       OPENWIKI_SERVER_UPDATE_TIMEOUT: "${OPENWIKI_SERVER_UPDATE_TIMEOUT:-600}"
       OPENWIKI_SERVER_LOG_LEVEL: "${OPENWIKI_SERVER_LOG_LEVEL:-INFO}"
-      OPENWIKI_SERVER_CELERY_BROKER: "${OPENWIKI_SERVER_CELERY_BROKER:-redis://redis:6379/0}"
-      OPENWIKI_SERVER_CELERY_BACKEND: "${OPENWIKI_SERVER_CELERY_BACKEND:-redis://redis:6379/0}"
+      OPENWIKI_SERVER_CELERY_BROKER: "${OPENWIKI_SERVER_CELERY_BROKER:-redis://host.docker.internal:6379/0}"
+      OPENWIKI_SERVER_CELERY_BACKEND: "${OPENWIKI_SERVER_CELERY_BACKEND:-redis://host.docker.internal:6379/0}"
     volumes:
       - app_data:/app/data
-    depends_on:
-      - redis
 
 volumes:
   app_data:
-  redis_data:

@@ -48,7 +48,7 @@ openwiki-server export wiki_fb42912a4348
   │ http://127.0.0.1:18011   grpc://127.0.0.1:50052   http://127.0.0.1:8404（stats）
   ▼
 ┌────────────────────────────────────────────────┐
-│  容器 openwiki-server-app-1                     │
+│  容器 openwiki-server                          │
 │  HAProxy(:8080 HTTP / :50052 gRPC / :8404 stats)│
 │     │ 反向代理 / TCP 透传                        │
 │     ▼                                          │
@@ -61,7 +61,7 @@ openwiki-server export wiki_fb42912a4348
 bash scripts/build_docker.sh
 # 启动（默认入口 http://127.0.0.1:18011；stats http://127.0.0.1:8404）
 docker compose up -d
-# 启用 Celery worker（redis + worker 一起启动）
+# 启用 Celery worker（broker/backend 用外部 redis，默认 redis://host.docker.internal:6379/0）
 docker compose --profile worker up -d
 # 冒烟验证（7 项断言，--force-build 可强制重建）
 bash scripts/docker_smoke.sh
@@ -71,6 +71,9 @@ bash scripts/docker_smoke.sh
   `HAPROXY_STATS_USER / HAPROXY_STATS_PASSWORD`（默认 `admin/change-me`，生产必改）。
 - 数据卷 `app_data` 挂载 `/app/data`（SQLite 与 wiki 产物持久化）；worker 与 app 共用同一数据卷。
 - 环境变量模板：`cp docker/.env.example .env`（生产密码、端口、LLM 内核配置）。
+- Celery 使用**外部 redis**（compose 不再内置 redis 服务）；默认指向宿主机
+  `host.docker.internal:6379`，远程实例在 `.env` 用 `OPENWIKI_SERVER_CELERY_BROKER` /
+  `OPENWIKI_SERVER_CELERY_BACKEND` 覆盖（未启用 worker 时 app 不主动连接）。
 - `OPENWIKI_SERVER_OPENWIKI=0` 可强制离线规则切页（镜像内已含 Node 22 + openwiki 内核，
   默认启用、LLM 失败自动降级）。
 - 异步加工：build/merge 等请求带 `async=1` 时登记为 job 并经 Celery 投递（broker 不可达时
