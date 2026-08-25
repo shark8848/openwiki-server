@@ -36,7 +36,7 @@ def _handle(trace_id: str, fn) -> JSONResponse:
 
 def create_app(service: Any | None = None) -> FastAPI:
     svc = service or get_service()
-    app = FastAPI(title="OpenWiki Server", version="0.1.0")
+    app = FastAPI(title="OpenWiki Server", version="0.2.0")
 
     @app.get("/health")
     def health() -> dict[str, Any]:

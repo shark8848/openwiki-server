@@ -1,16 +1,18 @@
 # openwiki-server-sdk
 
-OpenWiki Server **独立承载服务**（wiki 引擎作为独立进程/容器对外提供）的应用集成 SDK。**v1.0.0**。
+OpenWiki Server **独立承载服务**（wiki 引擎作为独立进程/容器对外提供）的应用集成 SDK。**v0.1.0**，
+独立发布到 PyPI（`openwiki-server-sdk`，仅依赖 `httpx`）。
 
 设计文档：`docs/独立承载服务与SDK集成设计.md`（仓库根目录）。
 
 ## 安装
 
 ```bash
-pip install sdk/python
+pip install openwiki-server-sdk
 ```
 
-仅依赖 `httpx`；测试依赖 `pytest`（`pip install "sdk/python[dev]"`）。
+本地开发调试可 `pip install sdk/python`，
+测试依赖 `pytest`（`pip install "sdk/python[dev]"`）。
 
 ## 快速开始（同步）
 

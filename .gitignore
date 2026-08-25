@@ -8,3 +8,10 @@ data/
 
 # docker compose 环境变量（本地模板 docker/.env.example）
 .env
+
+# PyPI 发布
+dist/
+build/
+.eggs/
+config/pypi.env
+!config/pypi.env.example

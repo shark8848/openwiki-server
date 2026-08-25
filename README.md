@@ -3,11 +3,39 @@
 把 LangChain **OpenWiki**（`langchain-ai/openwiki`，Markdown wiki 内核）封装为独立对外服务的 Wiki 引擎，
 供 `/home/open-ikc` 的 Wiki 库能力消费；对外提供 **HTTP / gRPC / Celery / MCP / CLI** 五类接口。
 
+<p align="center">
+  <a href="https://pypi.org/project/openwiki-server/"><img src="https://img.shields.io/pypi/v/openwiki-server" alt="PyPI" /></a>
+  <a href="https://pypi.org/project/openwiki-server-sdk/"><img src="https://img.shields.io/pypi/v/openwiki-server-sdk" alt="SDK PyPI" /></a>
+  <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/License-MIT-green.svg" alt="MIT" /></a>
+  <img src="https://img.shields.io/badge/Python-3.10%2B-blue" alt="Python 3.10+" />
+</p>
+
 - 设计方案：`docs/解决方案.md`
 - gRPC 权威契约：`proto/wiki/v1/wiki.proto`
 - 配置样例：`config/engine.example.yaml`（全部可用环境变量覆盖）
 - 命令行测试与调用指南：`docs/命令行测试与调用指南.md`（五类接口全部命令，已用仓库真实文档实测）
 - 独立承载服务与 SDK 集成设计：`docs/独立承载服务与SDK集成设计.md`（应用侧快速集成）
+
+## 安装（PyPI）
+
+```bash
+pip install openwiki-server                        # 引擎 + 独立承载服务（HTTP/gRPC/Celery/MCP/CLI）
+pip install openwiki-server[server]                # + 承载服务依赖
+pip install openwiki-server[all]                   # 全部依赖
+pip install openwiki-server-sdk                    # 仅应用集成 SDK（httpx，应用侧集成）
+```
+
+引擎与独立承载服务发布为 `openwiki-server`，应用集成 SDK 独立发布为
+`openwiki-server-sdk`（仅依赖 `httpx`）。SDK 快速开始见
+[`sdk/python/README.md`](sdk/python/README.md)。
+
+发布到 PyPI：
+
+```bash
+cp config/pypi.env.example config/pypi.env   # 填入 OPENWIKI_PYPI_TOKEN
+./scripts/publish-pypi.sh                    # 构建 + 上传
+./scripts/publish-pypi.sh --test             # 上传到 TestPyPI
+```
 
 ## 内核说明
 
@@ -99,7 +127,7 @@ openwiki-server 可作**独立承载服务**（本地进程或 Docker 单镜像�
 `openwiki-server-sdk`（参考 open-ikc `open-ikc-sdk` 定义）快速接入全部 wiki 能力：
 
 ```bash
-pip install sdk/python
+pip install openwiki-server-sdk
 ```
 
 ```python

@@ -13,7 +13,7 @@ from ..errors import OpenWikiError
 from ..protocol import error, new_trace_id, ok
 from ..runtime import get_service
 
-SERVER_INFO = {"name": "openwiki-server", "version": "0.1.0"}
+SERVER_INFO = {"name": "openwiki-server", "version": "0.2.0"}
 PROTOCOL_VERSION = "2025-03-26"
 
 

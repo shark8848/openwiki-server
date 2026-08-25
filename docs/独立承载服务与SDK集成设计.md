@@ -1,7 +1,9 @@
 # OpenWiki Server 独立承载服务与 SDK 集成设计（openwiki-server-sdk）
 
-> 版本：1.0.0
+> 版本：1.0.0（文档版本；SDK 包版本 0.1.0）
 > 状态：已发布
+> 发布形态：SDK 独立发布到 PyPI（`pip install openwiki-server-sdk`，v0.1.0，仅依赖 `httpx`），
+> 与主包 `openwiki-server`（v0.2.0+，不再内嵌 SDK）解耦。
 > 适用范围：面向外部应用的集成客户端 SDK；openwiki-server 作为**独立承载服务**（独立进程/容器，
 > 对外暴露 HTTP 18011 / gRPC 50052）运行，应用侧通过本 SDK 快速集成 wiki 能力。
 > 参考 open-ikc 的 SDK 定义（`/home/open-ikc/sdk/python`，`open-ikc-sdk`）：
@@ -42,7 +44,7 @@ sdk/python/
   README.md               # SDK 使用说明（安装 / 快速开始 / 环境变量 / 联调冒烟）
   openwiki_server_sdk/
     __init__.py           # 导出 OpenWikiServerClient / AsyncOpenWikiServerClient / 异常 / 模型
-    _version.py           # SDK 版本号（1.0.0）
+    _version.py           # SDK 版本号（0.1.0）
     _bootstrap.py         # client_from_env / async_client_from_env：环境变量 -> 客户端
     client.py             # 主客户端 + wiki/jobs 域子客户端 + raw 逃生口 + fetch_openapi
     async_client.py       # 异步客户端（httpx.AsyncClient），领域方法同同步客户端

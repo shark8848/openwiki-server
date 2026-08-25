@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "openwiki-server-sdk"
-version = "1.0.0"
+version = "0.1.0"
 description = "OpenWiki Server 独立承载服务应用集成 SDK（wiki 实例 / 建页加工 / 检索 / 导出 / 异步任务）"
 readme = "README.md"
 requires-python = ">=3.12"
