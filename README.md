@@ -6,6 +6,8 @@
 - 设计方案：`docs/解决方案.md`
 - gRPC 权威契约：`proto/wiki/v1/wiki.proto`
 - 配置样例：`config/engine.example.yaml`（全部可用环境变量覆盖）
+- 命令行测试与调用指南：`docs/命令行测试与调用指南.md`（五类接口全部命令，已用仓库真实文档实测）
+- 独立承载服务与 SDK 集成设计：`docs/独立承载服务与SDK集成设计.md`（应用侧快速集成）
 
 ## 内核说明
 
@@ -73,7 +75,8 @@ bash scripts/docker_smoke.sh
 - 环境变量模板：`cp docker/.env.example .env`（生产密码、端口、LLM 内核配置）。
 - Celery 使用**外部 redis**（compose 不再内置 redis 服务）；默认指向宿主机
   `host.docker.internal:6379`，远程实例在 `.env` 用 `OPENWIKI_SERVER_CELERY_BROKER` /
-  `OPENWIKI_SERVER_CELERY_BACKEND` 覆盖（未启用 worker 时 app 不主动连接）。
+  `OPENWIKI_SERVER_CELERY_BACKEND` 覆盖；本机 redis 若需密码写成
+  `redis://:<密码>@host.docker.internal:6379/0`（未启用 worker 时 app 不主动连接）。
 - `OPENWIKI_SERVER_OPENWIKI=0` 可强制离线规则切页（镜像内已含 Node 22 + openwiki 内核，
   默认启用、LLM 失败自动降级）。
 - 异步加工：build/merge 等请求带 `async=1` 时登记为 job 并经 Celery 投递（broker 不可达时
@@ -90,6 +93,41 @@ bash scripts/docker_smoke.sh
 | MCP | `openwiki-server serve mcp` | stdio JSON-RPC，`initialize / tools/list / tools/call` |
 | CLI | `openwiki-server ...` | typer，退出码 0/1/6 约定同 open-ikc `ikc` |
 
+## SDK（应用侧快速集成）
+
+openwiki-server 可作**独立承载服务**（本地进程或 Docker 单镜像栈），应用侧用
+`openwiki-server-sdk`（参考 open-ikc `open-ikc-sdk` 定义）快速接入全部 wiki 能力：
+
+```bash
+pip install sdk/python
+```
+
+```python
+from openwiki_server_sdk import OpenWikiServerClient
+
+with OpenWikiServerClient(base_url="http://127.0.0.1:18011") as client:
+    wiki = client.wikis.create(kbId="kb_demo", name="产品知识库",
+                               wikiConfig={"granularity": "heading"})
+    result = client.wikis.build(
+        wiki.wikiId, docId="doc_1", title="产品手册",
+        markdown=open("docs/进展.md", encoding="utf-8").read())
+    print(result.mode, result.total)
+    hits = client.wikis.search(wiki.wikiId, q="HAProxy")
+    job = client.wikis.build(wiki.wikiId, docId="doc_2", title="异步", async_=True)
+    print(client.jobs.run(job.jobId).status)
+```
+
+- 领域方法：`client.wikis.create/list/get/delete/tree/page/search/stat/export/
+  build/merge/deprecate_doc/update/ingest` 与 `client.jobs.run/get/list`；
+  同步 `OpenWikiServerClient` / 异步 `AsyncOpenWikiServerClient` 共享同一套模型。
+- 环境变量引导：`OPENWIKI_SERVER_BASE_URL`（默认 `http://127.0.0.1:18011`）/
+  `OPENWIKI_SERVER_TOKEN` / `OPENWIKI_SERVER_USER_ID` / `OPENWIKI_SERVER_TENANT_ID` /
+  `OPENWIKI_SERVER_ROLES`，经 `client_from_env()` 构造。
+- 自测与冒烟：`cd sdk/python && PYTHONPATH=. python -m pytest tests -q`（36 例 MockTransport）；
+  真实联调 `python sdk/python/examples/quickstart.py`。
+- 完整设计（包结构 / 异常层级 / 请求链路 / API 对照表 / 独立承载部署）：见
+  `docs/独立承载服务与SDK集成设计.md`；SDK 使用说明见 `sdk/python/README.md`。
+
 ## 环境变量
 
 `OPENWIKI_SERVER_DATA_DIR` / `_DB_PATH` / `_HTTP_HOST` / `_HTTP_PORT`（18011）/
@@ -101,8 +139,61 @@ bash scripts/docker_smoke.sh
 
 ## 测试
 
+### 单元 / 冒烟（pytest）
+
 ```bash
 PYTHONPATH=. python -m pytest tests -q
 ```
 
 > 沙箱/CI 若禁止绑定 socket，gRPC 真链路测试自动 skip（进程内 handler 语义仍覆盖）。
+
+### 命令行测试与调用（五类接口）
+
+详细手册见 `docs/命令行测试与调用指南.md`：HTTP(curl) / CLI / gRPC / MCP / Celery(jobs) 全部命令，
+已用仓库真实文档（`docs/进展.md`、`docs/解决方案.md`、`README.md`）实测通过。
+
+一键全链路演练（探针 → CRUD → 真实文档 build → tree/page/search/stat/export →
+merge/deprecate → 异步 job → CLI 等价命令，全部断言通过后打印 `ALL PASS`）：
+
+```bash
+bash scripts/wiki_api_drill.sh
+```
+
+常用命令速查（离线规则模式 `OPENWIKI_SERVER_OPENWIKI=0`，服务默认 `127.0.0.1:18011`）：
+
+```bash
+BASE=http://127.0.0.1:18011
+
+# 起服务
+export OPENWIKI_SERVER_DATA_DIR=/tmp/ow-live OPENWIKI_SERVER_OPENWIKI=0
+openwiki-server serve http
+
+# 创建 wiki（WID 取返回 data.wikiId）
+curl -sS -X POST "$BASE/api/v1/wiki/wikis" -H 'Content-Type: application/json' \
+  -d '{"kbId":"kb_live_demo","name":"演示","wikiConfig":{"granularity":"heading"}}'
+
+# 用真实文档建页（docs/进展.md，heading 粒度切 11 页）
+curl -sS -X POST "$BASE/api/v1/wiki/wikis/$WID/build" -H 'Content-Type: application/json' \
+  -d "$(python -c "import json;print(json.dumps({'docId':'d1','title':'任务进展记录','tags':['运维'],'markdown':open('docs/进展.md',encoding='utf-8').read()}))")"
+
+# 查询 / 检索 / 导出
+curl -sS "$BASE/api/v1/wiki/wikis/$WID/tree?page=1&pageSize=20"
+curl -sS --get "$BASE/api/v1/wiki/wikis/$WID/search" --data-urlencode "q=检索"
+curl -sS "$BASE/api/v1/wiki/wikis/$WID/stat"
+curl -sS "$BASE/api/v1/wiki/wikis/$WID/export?format=json"
+
+# 异步任务：async=1 提交（JOB_ID 取返回 data.jobId）→ 手动执行 → 查询
+curl -sS -X POST "$BASE/api/v1/wiki/wikis/$WID/build" -H 'Content-Type: application/json' \
+  -d '{"async":"1","docId":"d_async","title":"异步示例","markdown":"# 异步示例"}'
+curl -sS -X POST "$BASE/api/v1/wiki/jobs/$JOB_ID/run"
+curl -sS "$BASE/api/v1/wiki/jobs/$JOB_ID"
+
+# gRPC / MCP
+python - <<'PY'
+from openwiki_engine.interfaces.grpc_server import grpc_client
+client = grpc_client("127.0.0.1", 50052)
+print(client("Stat", {"wikiId": "wiki_<id>"}))
+PY
+printf '%s\n' '{"jsonrpc":"2.0","id":1,"method":"initialize"}' \
+  '{"jsonrpc":"2.0","id":2,"method":"tools/list"}' | openwiki-server serve mcp
+```
