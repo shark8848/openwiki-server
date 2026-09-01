@@ -40,7 +40,9 @@ COPY openwiki_engine/ ./openwiki_engine/
 COPY proto/ ./proto/
 COPY docs/ ./docs/
 COPY config/ ./config/
-RUN pip install --no-cache-dir ".[log-center]"
+# server extra：引擎运行所需（fastapi/uvicorn/grpcio/celery/pydantic/redis/typer）；
+# log-center extra：IKC Log Center 远程日志投递 SDK
+RUN pip install --no-cache-dir ".[server,log-center]"
 
 # HAProxy 代理层：配置模板 + 入口脚本（渲染配置后同进程拉起 uvicorn + gRPC + haproxy）
 COPY docker/haproxy.cfg /etc/haproxy/haproxy.cfg.tmpl

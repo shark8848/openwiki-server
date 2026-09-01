@@ -11,6 +11,7 @@
 </p>
 
 - 设计方案：`docs/解决方案.md`
+- 离线镜像部署手册：`docs/deploy-offline.md`（docker save → 传输 → load → compose 启动）
 - gRPC 权威契约：`proto/wiki/v1/wiki.proto`
 - 配置样例：`config/engine.example.yaml`（全部可用环境变量覆盖）
 - 命令行测试与调用指南：`docs/命令行测试与调用指南.md`（五类接口全部命令，已用仓库真实文档实测）

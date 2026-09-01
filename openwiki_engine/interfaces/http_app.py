@@ -40,7 +40,7 @@ def create_app(service: Any | None = None) -> FastAPI:
     settings = Settings()
     configure_logging(level=settings.log_level, log_center=settings.log_center)
     svc = service or get_service()
-    app = FastAPI(title="OpenWiki Server", version="0.3.0")
+    app = FastAPI(title="OpenWiki Server", version="0.3.1")
 
     @app.get("/health")
     def health() -> dict[str, Any]:
