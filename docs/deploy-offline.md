@@ -92,11 +92,22 @@ HAPROXY_STATS_PASSWORD=change-me
 # 日志级别：DEBUG / INFO / WARNING / ERROR
 OPENWIKI_SERVER_LOG_LEVEL=INFO
 
-# openwiki 内核：1 启用（需配置 LLM 凭据）；0 强制离线规则模式（无需 LLM）
-OPENWIKI_SERVER_OPENWIKI=0
-# OPENWIKI_SERVER_PROVIDER=openai
-# OPENWIKI_SERVER_MODEL_ID=
-# OPENWIKI_SERVER_UPDATE_TIMEOUT=600
+# openwiki 内核与 LLM（1 启用 LLM 合成；0 强制离线规则模式，无需凭据）
+OPENWIKI_SERVER_OPENWIKI=1
+OPENWIKI_SERVER_PROVIDER=openai-compatible
+OPENWIKI_SERVER_MODEL_ID=deepseek-v4-flash
+OPENWIKI_SERVER_UPDATE_TIMEOUT=600
+# 经本机 litellm 代理（LiteLLM 统一鉴权，key 用 LITELLM_MASTER_KEY；默认走 /v1/chat/completions）
+OPENAI_COMPATIBLE_API_KEY=REPLACE_WITH_LITELLM_MASTER_KEY
+OPENAI_COMPATIBLE_BASE_URL=http://host.docker.internal:4000/v1
+# 直连 DeepSeek 官方端点（不经 litellm）时：
+# OPENAI_COMPATIBLE_API_KEY=sk-xxx
+# OPENAI_COMPATIBLE_BASE_URL=https://api.deepseek.com/v1
+# 其它 provider 示例：
+# OPENAI_API_KEY=xxx                      # provider=openai（可配 OPENAI_BASE_URL）
+# ANTHROPIC_API_KEY=xxx                   # provider=anthropic
+# GEMINI_API_KEY=xxx                      # provider=gemini
+# OPENROUTER_API_KEY=xxx                  # provider=openrouter
 
 # IKC Log Center 远程日志投递（镜像已内置 SDK；不需要则保持 0）
 OPENWIKI_SERVER_LOG_CENTER_ENABLED=0
@@ -128,6 +139,11 @@ curl -s -X POST http://127.0.0.1:18011/api/v1/wiki/wikis \
 # {"traceId":"...","errCode":0,"errMsg":"","data":{...}}
 
 curl -s 'http://127.0.0.1:18011/api/v1/wiki/wikis?tenantId=t-1'
+
+# 触发 LLM 合成刷新（需第 5 节 LLM 凭据正确；凭据缺失/无效时 errCode=500，errMsg 含 openwiki 报错）
+curl -s -X POST http://127.0.0.1:18011/api/v1/wiki/wikis/<wikiId>/update \
+  -H 'Content-Type: application/json' \
+  -d '{"message":"按源文档重新合成"}'
 
 # HAProxy stats（需第 5 节账号）
 curl -s -u admin:change-me http://127.0.0.1:8404/stats | head -5
@@ -179,7 +195,12 @@ docker compose logs -f app | grep 'log center'
 ```bash
 mkdir -p /opt/openwiki-server/data
 cat > /opt/openwiki-server/.env <<'EOF'
-OPENWIKI_SERVER_OPENWIKI=0
+OPENWIKI_SERVER_OPENWIKI=1
+OPENWIKI_SERVER_PROVIDER=openai-compatible
+OPENWIKI_SERVER_MODEL_ID=deepseek-v4-flash
+OPENWIKI_SERVER_UPDATE_TIMEOUT=600
+OPENAI_COMPATIBLE_API_KEY=REPLACE_WITH_LITELLM_MASTER_KEY
+OPENAI_COMPATIBLE_BASE_URL=http://host.docker.internal:4000/v1
 OPENWIKI_SERVER_LOG_LEVEL=INFO
 HAPROXY_STATS_USER=admin
 HAPROXY_STATS_PASSWORD=change-me

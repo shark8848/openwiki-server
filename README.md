@@ -167,7 +167,9 @@ with OpenWikiServerClient(base_url="http://127.0.0.1:18011") as client:
 `OPENWIKI_GRPC_PORT` / `HAPROXY_STATS_PORT`（宿主端口映射）。
 IKC Log Center 远程日志投递：`OPENWIKI_SERVER_LOG_CENTER_ENABLED` / `_URL` /
 `_TOKEN` / `_TIMEOUT` / `_QUEUE_SIZE` / `_BATCH_SIZE`（HTTP POST `{url}/ingest`，
-需安装 `openwiki-server[log-center]`）
+需安装 `openwiki-server[log-center]`）。LLM 凭据由容器环境直通，按
+`OPENWIKI_SERVER_PROVIDER` 对应设置（如 `OPENAI_API_KEY` / `ANTHROPIC_API_KEY` /
+`GEMINI_API_KEY` / `OPENROUTER_API_KEY`，见 `docs/deploy-offline.md` §5）。
 
 ## 测试
 
