@@ -87,7 +87,8 @@ HAPROXY_STATS_PORT=8404
 HAPROXY_STATS_USER=admin
 HAPROXY_STATS_PASSWORD=change-me
 
-# 运行数据（compose 默认 /app/data 挂载命名卷，一般无需改）
+# 运行数据（compose 默认 /app/data 挂载命名卷，一般无需改；
+# 若改为主机目录，需 chown 1000:1000 保证容器内可写）
 # OPENWIKI_SERVER_DATA_DIR=/app/data
 # 日志级别：DEBUG / INFO / WARNING / ERROR
 OPENWIKI_SERVER_LOG_LEVEL=INFO
@@ -145,6 +146,10 @@ curl -s -X POST http://127.0.0.1:18011/api/v1/wiki/wikis/<wikiId>/update \
   -H 'Content-Type: application/json' \
   -d '{"message":"按源文档重新合成"}'
 
+# 故障排查：若返回 504 Gateway Time-out，是 HAProxy 默认 timeout server 60s 掐断长 LLM 请求
+# （旧镜像）；新版镜像已内置 timeout server 600s，需重新 load 最新 tar 并重建容器。
+# 也可改用异步 job（需 worker + redis）：build/update 带 "async": true，再轮询 /api/v1/wiki/jobs/{jobId}
+
 # HAProxy stats（需第 5 节账号）
 curl -s -u admin:change-me http://127.0.0.1:8404/stats | head -5
 
@@ -180,6 +185,9 @@ docker compose logs -f app | grep 'log center'
 
 - 镜像已 `docker load`（见 §4）；宿主目录 `/opt/openwiki-server/data` 挂载为容器
   `/app/data`（SQLite `engine.db` + `wikis/`），删除/重建容器不丢数据。
+  **容器以 uid 1000（appuser）运行，宿主数据目录必须可写**，否则启动报
+  `sqlite3.OperationalError: unable to open database file`：
+  `sudo chown -R 1000:1000 /opt/openwiki-server/data`
 - Linux 上经 `host.docker.internal` 访问宿主机服务，必须加
   `--add-host host.docker.internal:host-gateway`。
 - 端口（容器端口固定，宿主端口可改；冲突检查：`ss -ltnp | grep -E ':(18011|50052|8404)\b'`）：
@@ -194,6 +202,7 @@ docker compose logs -f app | grep 'log center'
 
 ```bash
 mkdir -p /opt/openwiki-server/data
+sudo chown -R 1000:1000 /opt/openwiki-server/data   # 容器内 appuser(uid 1000) 需可写
 cat > /opt/openwiki-server/.env <<'EOF'
 OPENWIKI_SERVER_OPENWIKI=1
 OPENWIKI_SERVER_PROVIDER=openai-compatible
