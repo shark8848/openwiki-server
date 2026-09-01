@@ -18,6 +18,19 @@ def _env_bool(key: str, default: bool) -> bool:
 
 
 @dataclass(frozen=True)
+class LogCenterSettings:
+    """IKC Log Center 远程日志投递配置（HTTP POST {url}/ingest，参考 PyUploadX）。"""
+
+    enabled: bool = False
+    url: str | None = None
+    token: str | None = None
+    timeout_seconds: float = 2.0
+    queue_size: int = 1000
+    batch_size: int = 50
+    module_name: str = "openwiki-server"
+
+
+@dataclass(frozen=True)
 class Settings:
     """引擎配置：环境变量优先，缺省使用内置默认值。"""
 
@@ -46,6 +59,40 @@ class Settings:
     openwiki_update_timeout: int = field(
         default_factory=lambda: int(_env("OPENWIKI_SERVER_UPDATE_TIMEOUT", "600"))
     )
+    log_center_enabled: bool = field(
+        default_factory=lambda: _env_bool("OPENWIKI_SERVER_LOG_CENTER_ENABLED", False)
+    )
+    log_center_url: str | None = field(
+        default_factory=lambda: os.environ.get("OPENWIKI_SERVER_LOG_CENTER_URL") or None
+    )
+    log_center_token: str | None = field(
+        default_factory=lambda: os.environ.get("OPENWIKI_SERVER_LOG_CENTER_TOKEN") or None
+    )
+    log_center_timeout_seconds: float = field(
+        default_factory=lambda: float(_env("OPENWIKI_SERVER_LOG_CENTER_TIMEOUT", "2"))
+    )
+    log_center_queue_size: int = field(
+        default_factory=lambda: int(_env("OPENWIKI_SERVER_LOG_CENTER_QUEUE_SIZE", "1000"))
+    )
+    log_center_batch_size: int = field(
+        default_factory=lambda: int(_env("OPENWIKI_SERVER_LOG_CENTER_BATCH_SIZE", "50"))
+    )
+    log_center_module_name: str = field(
+        default_factory=lambda: _env("OPENWIKI_SERVER_LOG_CENTER_MODULE", "openwiki-server")
+    )
+
+    @property
+    def log_center(self) -> LogCenterSettings:
+        """聚合为 LogCenterSettings（日志模块消费）。"""
+        return LogCenterSettings(
+            enabled=self.log_center_enabled,
+            url=self.log_center_url,
+            token=self.log_center_token,
+            timeout_seconds=self.log_center_timeout_seconds,
+            queue_size=self.log_center_queue_size,
+            batch_size=self.log_center_batch_size,
+            module_name=self.log_center_module_name,
+        )
 
     @property
     def resolved_db_path(self) -> str:

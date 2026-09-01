@@ -163,7 +163,10 @@ with OpenWikiServerClient(base_url="http://127.0.0.1:18011") as client:
 `_OPENWIKI_BIN` / `_OPENWIKI`（0 关闭内核）/ `_PROVIDER` / `_MODEL_ID` /
 `_UPDATE_TIMEOUT` / `_LOG_LEVEL`；Docker 额外使用 `HAPROXY_STATS_USER` /
 `HAPROXY_STATS_PASSWORD`（HAProxy stats 登录）与 `OPENWIKI_HTTP_PORT` /
-`OPENWIKI_GRPC_PORT` / `HAPROXY_STATS_PORT`（宿主端口映射）
+`OPENWIKI_GRPC_PORT` / `HAPROXY_STATS_PORT`（宿主端口映射）。
+IKC Log Center 远程日志投递：`OPENWIKI_SERVER_LOG_CENTER_ENABLED` / `_URL` /
+`_TOKEN` / `_TIMEOUT` / `_QUEUE_SIZE` / `_BATCH_SIZE`（HTTP POST `{url}/ingest`，
+需安装 `openwiki-server[log-center]`）
 
 ## 测试
 

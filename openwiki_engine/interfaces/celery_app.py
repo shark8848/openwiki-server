@@ -113,4 +113,7 @@ def ingest_task(wiki_id: str, connector: str, job_id: str = "") -> dict[str, Any
 
 def worker_main(argv: list[str] | None = None) -> None:
     """启动 worker（供 `openwiki-server serve worker` 调用）。"""
+    from ..logging_setup import configure_logging
+
+    configure_logging(level=_settings.log_level, log_center=_settings.log_center)
     celery_app.worker_main(argv or ["worker", "-l", "info"])

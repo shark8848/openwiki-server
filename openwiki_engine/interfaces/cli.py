@@ -65,8 +65,10 @@ def serve(
 ) -> None:
     """启动协议面服务。"""
     from ..config import Settings
+    from ..logging_setup import configure_logging
 
     settings = Settings()
+    configure_logging(level=settings.log_level, log_center=settings.log_center)
     if kind == "http":
         import uvicorn
 

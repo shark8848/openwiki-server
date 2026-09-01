@@ -38,6 +38,9 @@ server = [
     "redis>=5.0",
     "typer>=0.12",
 ]
+log-center = [
+    "ikc-log-center>=1.4.22,<2",
+]
 all = [
     "fastapi>=0.115",
     "uvicorn[standard]>=0.30",
@@ -47,6 +50,7 @@ all = [
     "celery>=5.3",
     "redis>=5.0",
     "typer>=0.12",
+    "ikc-log-center>=1.4.22,<2",
 ]
 dev = [
     "pytest>=8.0",

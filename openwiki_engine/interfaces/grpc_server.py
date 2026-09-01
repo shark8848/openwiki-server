@@ -13,7 +13,9 @@ from typing import Any, Callable
 import grpc
 from google.protobuf import descriptor_pb2, descriptor_pool, message_factory
 
+from ..config import Settings
 from ..errors import OpenWikiError
+from ..logging_setup import configure_logging
 from ..protocol import error, new_trace_id, ok
 from ..runtime import get_service
 
@@ -220,6 +222,8 @@ def build_grpc_server(service: Any | None = None) -> grpc.Server:
 
 def serve_grpc(host: str = "0.0.0.0", port: int = 50052, service: Any | None = None) -> int:
     """启动 gRPC 服务（阻塞），返回实际监听端口。"""
+    settings = Settings()
+    configure_logging(level=settings.log_level, log_center=settings.log_center)
     server = build_grpc_server(service)
     bound_port = server.add_insecure_port(f"{host}:{port}")
     server.start()

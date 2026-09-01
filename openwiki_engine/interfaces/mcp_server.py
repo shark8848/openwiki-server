@@ -127,6 +127,11 @@ def _handle_request(req: dict[str, Any], handlers: dict[str, Callable]) -> dict[
 
 def serve_mcp(service: Any | None = None) -> None:
     """阻塞读取 stdin 的 MCP stdio 服务。"""
+    from ..config import Settings
+    from ..logging_setup import configure_logging
+
+    settings = Settings()
+    configure_logging(level=settings.log_level, log_center=settings.log_center)
     svc = service or get_service()
     handlers = _tool_handlers(svc)
     for line in sys.stdin:

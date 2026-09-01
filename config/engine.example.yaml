@@ -5,7 +5,9 @@
 #           OPENWIKI_SERVER_CELERY_BROKER / OPENWIKI_SERVER_CELERY_BACKEND /
 #           OPENWIKI_SERVER_MCP_TRANSPORT / OPENWIKI_SERVER_LOG_LEVEL /
 #           OPENWIKI_SERVER_OPENWIKI_BIN / OPENWIKI_SERVER_OPENWIKI（0 关闭内核）/
-#           OPENWIKI_SERVER_PROVIDER / OPENWIKI_SERVER_MODEL_ID
+#           OPENWIKI_SERVER_PROVIDER / OPENWIKI_SERVER_MODEL_ID /
+#           OPENWIKI_SERVER_LOG_CENTER_ENABLED / OPENWIKI_SERVER_LOG_CENTER_URL /
+#           OPENWIKI_SERVER_LOG_CENTER_TOKEN
 
 data_dir: data
 db_path: ""
@@ -26,3 +28,13 @@ openwiki:
   provider: openai
   model_id: ""
   update_timeout: 600
+# IKC Log Center 远程日志投递（HTTP POST {url}/ingest，需安装 openwiki-server[log-center]）
+# 环境变量：OPENWIKI_SERVER_LOG_CENTER_ENABLED / _URL / _TOKEN / _TIMEOUT / _QUEUE_SIZE / _BATCH_SIZE
+log_center:
+  enabled: false
+  url: http://log-center:9315
+  token: null
+  timeout_seconds: 2
+  queue_size: 1000
+  batch_size: 50
+  module_name: openwiki-server

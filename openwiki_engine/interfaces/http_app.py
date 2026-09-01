@@ -7,7 +7,9 @@ from typing import Any
 from fastapi import FastAPI, Query, Request
 from fastapi.responses import JSONResponse
 
+from ..config import Settings
 from ..errors import OpenWikiError
+from ..logging_setup import configure_logging
 from ..protocol import TRACE_ID_HEADER, error, new_trace_id, ok
 from ..runtime import get_service
 
@@ -35,6 +37,8 @@ def _handle(trace_id: str, fn) -> JSONResponse:
 
 
 def create_app(service: Any | None = None) -> FastAPI:
+    settings = Settings()
+    configure_logging(level=settings.log_level, log_center=settings.log_center)
     svc = service or get_service()
     app = FastAPI(title="OpenWiki Server", version="0.2.0")
 

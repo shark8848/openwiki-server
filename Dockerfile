@@ -40,7 +40,7 @@ COPY openwiki_engine/ ./openwiki_engine/
 COPY proto/ ./proto/
 COPY docs/ ./docs/
 COPY config/ ./config/
-RUN pip install --no-cache-dir .
+RUN pip install --no-cache-dir ".[log-center]"
 
 # HAProxy 代理层：配置模板 + 入口脚本（渲染配置后同进程拉起 uvicorn + gRPC + haproxy）
 COPY docker/haproxy.cfg /etc/haproxy/haproxy.cfg.tmpl
