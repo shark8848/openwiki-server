@@ -70,3 +70,20 @@
     commitments、quickstart、sources/doc-e2e-0902 等 8 个 md），无 `/data/wikis/<id>/data/wikis/` 嵌套；
   - `/api/v1/wiki/wikis/wiki-e2e-0902/stat`：pageCount=5、active=5、deprecated=0。
 - 版本 pyproject.toml 已为 0.3.3；提交后 push + publish，并同步远端 10.88.155.31 重新 load 部署。
+
+## 09-02 收尾
+- PyPI 0.3.3（昨天 18:25 上传）不含晚间修复，已升 **0.3.4** 并发布成功
+  （wheel+sdist，`https://pypi.org/project/openwiki-server/0.3.4/`）；SDK 0.1.0 未变。
+- 用 0.3.4 重建镜像并导出：`docker/images/openwiki-server_1.0.0.tar`（227M，11:09）；
+  镜像内 `openwiki_engine.__version__ == 0.3.4`。
+- 部署包：`docker/images/openwiki-server-compose.tgz`（compose + engine.example.yaml + deploy-offline.md）。
+- 提交记录：`fdc0476`（wiki_root/datetime 修复）、`4e96111`（升 0.3.4），均已 push origin main。
+- **远端 10.88.155.31 同步受阻**：本机（192.168.90.x）SSH 22/443/2222 等端口全部超时（防火墙拦截），
+  仅 HTTP 可达（18011 上仍跑 0.3.0 旧版）。MCP(8097) 是检索服务无部署能力。
+  需在 10.88.x.x 局域网内的机器执行：
+  ```
+  scp docker/images/openwiki-server_1.0.0.tar root@10.88.155.31:/opt/openwiki-server/
+  ssh root@10.88.155.31 'cd /opt/openwiki-server && docker load -i openwiki-server_1.0.0.tar && docker compose up -d --no-build --force-recreate'
+  # 或非 compose：docker rm -f openwiki-server openwiki-server-worker 后按 deploy-offline.md §8.3/8.4 重新 run
+  ```
+  升级前远端当前版本 0.3.0；升级后 `curl http://10.88.155.31:18011/openapi.json` 应显示 0.3.4。
