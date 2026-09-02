@@ -88,7 +88,7 @@ class SqliteWikiStore:
     # ---------- wiki 文件根目录 ----------
 
     def wiki_root(self, wiki_id: str) -> str:
-        root = Path(self.data_dir) / "wikis" / wiki_id
+        root = Path(self.data_dir).expanduser().resolve() / "wikis" / wiki_id
         root.mkdir(parents=True, exist_ok=True)
         (root / ".openwiki" / "wiki").mkdir(parents=True, exist_ok=True)
         (root / "sources").mkdir(parents=True, exist_ok=True)

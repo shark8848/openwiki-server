@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import json
+from datetime import date, datetime
 from typing import Any
 
 from fastapi import FastAPI, Query, Request
@@ -14,13 +16,26 @@ from ..protocol import TRACE_ID_HEADER, error, new_trace_id, ok
 from ..runtime import get_service
 
 
+def _json_default(value: Any) -> str:
+    if isinstance(value, (datetime, date)):
+        return value.isoformat()
+    return str(value)
+
+
+class _JsonResponse(JSONResponse):
+    """响应序列化兜底：datetime/date 等非标准类型转字符串，避免业务数据 500。"""
+
+    def render(self, content: Any) -> bytes:
+        return json.dumps(content, ensure_ascii=False, default=_json_default).encode("utf-8")
+
+
 def _trace(request: Request) -> str:
     return request.headers.get(TRACE_ID_HEADER) or new_trace_id()
 
 
 def _handle(trace_id: str, fn) -> JSONResponse:
     try:
-        return JSONResponse(ok(trace_id, fn()))
+        return _JsonResponse(ok(trace_id, fn()))
     except OpenWikiError as exc:
         status = (
             400
@@ -31,9 +46,9 @@ def _handle(trace_id: str, fn) -> JSONResponse:
             if exc.code == "200409"
             else 500
         )
-        return JSONResponse(error(trace_id, exc), status_code=status)
+        return _JsonResponse(error(trace_id, exc), status_code=status)
     except Exception as exc:  # pragma: no cover
-        return JSONResponse(error(trace_id, exc), status_code=500)
+        return _JsonResponse(error(trace_id, exc), status_code=500)
 
 
 def create_app(service: Any | None = None) -> FastAPI:

@@ -16,6 +16,7 @@ import os
 import re
 import shutil
 import subprocess
+from datetime import date, datetime
 from pathlib import Path
 from typing import Any
 
@@ -28,6 +29,19 @@ FRONT_MATTER_RE = re.compile(r"^---\s*\n(.*?)\n---\s*\n?(.*)$", re.DOTALL)
 WIKI_LINK_RE = re.compile(r"\[\[([^\]|]+)(?:\|[^\]|]+)?\]\]")
 MD_LINK_RE = re.compile(r"\[([^\]]+)\]\(([^)]+\.md)\)")
 FIELD_RE = re.compile(r"^\s*([\u4e00-\u9fa5\w]+)[：:]\s*(.+?)\s*$")
+
+
+def _json_safe(value: Any) -> Any:
+    """YAML front matter 的日期/时间归一化为 ISO 字符串，避免响应序列化失败。"""
+    if isinstance(value, datetime):
+        return value.isoformat()
+    if isinstance(value, date):
+        return value.isoformat()
+    if isinstance(value, list):
+        return [_json_safe(item) for item in value]
+    if isinstance(value, dict):
+        return {key: _json_safe(item) for key, item in value.items()}
+    return value
 
 
 def openwiki_bin(settings: Settings | None = None) -> str:
@@ -55,6 +69,7 @@ def run_update(
     settings: Settings | None = None,
 ) -> dict[str, Any]:
     """运行 `openwiki personal --update <message>`（非交互，stdin 关闭自动退出）。"""
+    wiki_root = os.path.abspath(wiki_root)
     binary = openwiki_bin(settings)
     cmd = [binary, "personal", "--update"]
     if message:
@@ -106,6 +121,7 @@ def run_ingest(
     timeout: int = 600,
 ) -> dict[str, Any]:
     """运行 `openwiki ingest <connector>`。"""
+    wiki_root = os.path.abspath(wiki_root)
     binary = openwiki_bin(settings)
     cmd = [binary, "ingest", connector]
     env = dict(os.environ)
@@ -217,6 +233,7 @@ def parse_okf_pages(wiki_dir: str, *, kb_id: str = "") -> list[dict[str, Any]]:
             for key, value in front.items()
             if str(key) not in ("title", "type", "generated", "tags", "sources", "status", "stale_after", "stableKey")
         }
+        fields = {key: _json_safe(value) for key, value in fields.items()}
         status = str(front.get("status") or "active").strip().lower()
         if status not in ("active", "deprecated"):
             status = "active"

@@ -98,13 +98,18 @@ class Settings:
     def resolved_db_path(self) -> str:
         if self.db_path:
             return self.db_path
-        data_dir = Path(self.data_dir)
+        data_dir = Path(self.resolved_data_dir)
         data_dir.mkdir(parents=True, exist_ok=True)
         return str(data_dir / "engine.db")
 
+    @property
+    def resolved_data_dir(self) -> str:
+        """数据目录绝对路径（openwiki 子进程 HOME/cwd 必须为绝对路径）。"""
+        return str(Path(self.data_dir).expanduser().resolve())
+
     def wiki_root(self, wiki_id: str) -> str:
         """wiki 实例根目录：{data_dir}/wikis/{wiki_id}/（含 .openwiki/wiki 与 sources/）。"""
-        root = Path(self.data_dir) / "wikis" / wiki_id
+        root = Path(self.resolved_data_dir) / "wikis" / wiki_id
         root.mkdir(parents=True, exist_ok=True)
         (root / ".openwiki" / "wiki").mkdir(parents=True, exist_ok=True)
         (root / "sources").mkdir(parents=True, exist_ok=True)

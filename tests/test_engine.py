@@ -35,6 +35,19 @@ def _create(svc, kb_id="kb_test_1", config=None):
     )
 
 
+# ---------- storage ----------
+
+
+def test_wiki_root_is_absolute(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+    store = SqliteWikiStore(str(tmp_path / "test.db"), data_dir="data")
+    root = Path(store.wiki_root("wiki_abc12345"))
+    assert root.is_absolute()
+    assert root == tmp_path / "data" / "wikis" / "wiki_abc12345"
+    assert (root / ".openwiki" / "wiki").is_dir()
+    assert (root / "sources").is_dir()
+
+
 # ---------- domain ----------
 
 
@@ -428,3 +441,30 @@ def test_celery_tasks(tmp_path):
     finally:
         os.environ.pop("OPENWIKI_SERVER_OPENWIKI", None)
         runtime.reset_runtime()
+
+
+def test_parse_okf_pages_datetime_fields(tmp_path) -> None:
+    """OKF front matter 中的 YAML 日期应归一化为 ISO 字符串（否则响应序列化 500）。"""
+    from openwiki_engine.adapters.openwiki import parse_okf_pages
+
+    wiki_dir = tmp_path / ".openwiki" / "wiki"
+    wiki_dir.mkdir(parents=True)
+    (wiki_dir / "p.md").write_text(
+        "---\ntitle: 页面\nupdated: 2026-09-01T10:00:00+08:00\nseen: 2026-09-01\n---\n正文",
+        encoding="utf-8",
+    )
+    pages = parse_okf_pages(str(wiki_dir), kb_id="kb-1")
+    assert pages
+    fields = pages[0]["fields"]
+    assert fields["updated"] == "2026-09-01T10:00:00+08:00"
+    assert fields["seen"] == "2026-09-01"
+
+
+def test_http_response_serializes_datetime() -> None:
+    """HTTP envelope 兜底序列化：datetime 值不再导致 500。"""
+    from datetime import datetime
+
+    from openwiki_engine.interfaces.http_app import _JsonResponse
+
+    resp = _JsonResponse({"updated": datetime(2026, 9, 1, 10, 30, 0)})
+    assert b'"2026-09-01T10:30:00"' in resp.body
