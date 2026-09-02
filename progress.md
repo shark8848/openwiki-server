@@ -87,3 +87,11 @@
   # 或非 compose：docker rm -f openwiki-server openwiki-server-worker 后按 deploy-offline.md §8.3/8.4 重新 run
   ```
   升级前远端当前版本 0.3.0；升级后 `curl http://10.88.155.31:18011/openapi.json` 应显示 0.3.4。
+
+## 09-02 远端 LLM 模式测试（通过）
+- 10.88.155.31 已升级 0.3.4（openapi.json 确认），health/ready OK。
+- 建 wiki `wiki-remote-llm-0902` → build 返回 `mode: openwiki`、`total: 4`、`deprecated: 0`
+  （deepseek-v4-flash 经 litellm，约 2.5 分钟）。
+- stat pageCount=4/active=4、tree total=4、search(litellm)=4 hits。
+- page 详情正常：OKF front matter datetime 字段以 ISO 字符串返回（`2026-09-02T09:34:55+00:00`），
+  datetime 序列化修复在远端生效。
