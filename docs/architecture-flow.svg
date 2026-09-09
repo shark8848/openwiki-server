@@ -1,0 +1,296 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1560" height="1600" viewBox="0 0 1560 1600" font-family="PingFang SC, Microsoft YaHei, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto">
+      <path d="M0,0 L10,4 L0,8 Z" fill="#455A64"/>
+    </marker>
+    <marker id="arrow-orange" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto">
+      <path d="M0,0 L10,4 L0,8 Z" fill="#E65100"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="1560" height="1600" fill="#FAFAFA"/>
+  <text x="780" y="38" text-anchor="middle" font-size="22" font-weight="bold" fill="#263238">OpenWiki Server 整体处理流程与核心类</text>
+
+  <!-- ============ Row 1: 客户端层 ============ -->
+  <text x="40" y="64" font-size="13" font-weight="bold" fill="#1565C0">客户端 / 入口</text>
+
+  <g>
+    <rect x="40" y="72" width="430" height="140" rx="8" fill="#E3F2FD" stroke="#1565C0" stroke-width="1.5"/>
+    <rect x="40" y="72" width="430" height="24" rx="8" fill="#1565C0"/>
+    <text x="255" y="89" text-anchor="middle" font-size="13" font-weight="bold" fill="#FFFFFF">SDK sdk/python/openwiki_server_sdk</text>
+    <text x="52" y="116" font-size="12" fill="#263238">class OpenWikiServerClient / AsyncOpenWikiServerClient</text>
+    <text x="52" y="135" font-size="12" fill="#263238">  WikiClient: create / tree / page / search / build / merge</text>
+    <text x="52" y="154" font-size="12" fill="#263238">  JobsClient: run / get / list（异步任务轮询）</text>
+    <text x="52" y="173" font-size="12" fill="#263238">  transport + envelope 解析 + 错误映射 + traceId 透传</text>
+    <text x="52" y="192" font-size="12" fill="#263238">models: WikiMeta / BuildResult / WikiJob / …</text>
+  </g>
+
+  <g>
+    <rect x="510" y="72" width="330" height="140" rx="8" fill="#E3F2FD" stroke="#1565C0" stroke-width="1.5"/>
+    <rect x="510" y="72" width="330" height="24" rx="8" fill="#1565C0"/>
+    <text x="675" y="89" text-anchor="middle" font-size="13" font-weight="bold" fill="#FFFFFF">CLI（Typer）interfaces/cli.py</text>
+    <text x="522" y="116" font-size="12" fill="#263238">openwiki-server 命令行入口</text>
+    <text x="522" y="135" font-size="12" fill="#263238">serve http | grpc | mcp | worker</text>
+    <text x="522" y="154" font-size="12" fill="#263238">create / list / build / tree / search …</text>
+    <text x="522" y="173" font-size="12" fill="#263238">--json 原始输出 / --db-path 覆盖存储</text>
+  </g>
+
+  <g>
+    <rect x="880" y="72" width="300" height="140" rx="8" fill="#E3F2FD" stroke="#1565C0" stroke-width="1.5"/>
+    <rect x="880" y="72" width="300" height="24" rx="8" fill="#1565C0"/>
+    <text x="1030" y="89" text-anchor="middle" font-size="13" font-weight="bold" fill="#FFFFFF">MCP 客户端（外部）</text>
+    <text x="892" y="116" font-size="12" fill="#263238">JSON-RPC over stdio</text>
+    <text x="892" y="135" font-size="12" fill="#263238">调用 tools:</text>
+    <text x="892" y="154" font-size="12" fill="#263238">wiki_create / wiki_build / wiki_tree</text>
+    <text x="892" y="173" font-size="12" fill="#263238">wiki_search / wiki_page …</text>
+  </g>
+
+  <g>
+    <rect x="1220" y="72" width="300" height="140" rx="8" fill="#E3F2FD" stroke="#1565C0" stroke-width="1.5"/>
+    <rect x="1220" y="72" width="300" height="24" rx="8" fill="#1565C0"/>
+    <text x="1370" y="89" text-anchor="middle" font-size="13" font-weight="bold" fill="#FFFFFF">HTTP / gRPC 调用方（外部）</text>
+    <text x="1232" y="116" font-size="12" fill="#263238">任意服务 / 脚本 / drill 脚本</text>
+    <text x="1232" y="135" font-size="12" fill="#263238">REST: /api/v1/wiki/**</text>
+    <text x="1232" y="154" font-size="12" fill="#263238">gRPC: proto/wiki/v1/wiki.proto</text>
+  </g>
+
+  <!-- Row1 -> Row2 箭头 -->
+  <line x1="255" y1="212" x2="255" y2="288" stroke="#455A64" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="262" y="240" font-size="12" font-weight="bold" fill="#C62828">① build / merge / tree 请求</text>
+  <line x1="675" y1="212" x2="675" y2="288" stroke="#455A64" stroke-width="2" stroke-dasharray="5,4" marker-end="url(#arrow)"/>
+  <text x="682" y="240" font-size="11" fill="#546E7A">serve worker（Celery）</text>
+  <line x1="1030" y1="212" x2="1030" y2="288" stroke="#455A64" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="1370" y1="212" x2="1370" y2="288" stroke="#455A64" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- ============ Row 2: 接口层 ============ -->
+  <text x="40" y="284" font-size="13" font-weight="bold" fill="#2E7D32">协议接口层 openwiki_engine/interfaces</text>
+
+  <g>
+    <rect x="40" y="292" width="430" height="210" rx="8" fill="#E8F5E9" stroke="#2E7D32" stroke-width="1.5"/>
+    <rect x="40" y="292" width="430" height="24" rx="8" fill="#2E7D32"/>
+    <text x="255" y="309" text-anchor="middle" font-size="13" font-weight="bold" fill="#FFFFFF">http_app.py（FastAPI）create_app()</text>
+    <text x="52" y="336" font-size="12" fill="#263238">GET/POST/DELETE /api/v1/wiki/wikis</text>
+    <text x="52" y="355" font-size="12" fill="#263238">GET …/{id}/tree | page | search | stat | export</text>
+    <text x="52" y="374" font-size="12" fill="#263238">POST …/build | merge | deprecate-doc</text>
+    <text x="52" y="393" font-size="12" fill="#263238">POST/GET/DELETE /api/v1/wiki/jobs（+ run）</text>
+    <text x="52" y="412" font-size="12" font-weight="bold" fill="#C62828">② _handle(): ok()/error() 统一 envelope</text>
+    <text x="52" y="431" font-size="12" fill="#263238">   {traceId, errCode, errMsg, data} + X-Trace-Id</text>
+    <text x="52" y="450" font-size="12" fill="#263238">_JsonResponse: datetime 序列化兜底</text>
+    <text x="52" y="469" font-size="12" fill="#263238">/health /ready 健康检查</text>
+  </g>
+
+  <g>
+    <rect x="510" y="292" width="330" height="210" rx="8" fill="#E8F5E9" stroke="#2E7D32" stroke-width="1.5"/>
+    <rect x="510" y="292" width="330" height="24" rx="8" fill="#2E7D32"/>
+    <text x="675" y="309" text-anchor="middle" font-size="13" font-weight="bold" fill="#FFFFFF">celery_app.py（异步 Worker）</text>
+    <text x="522" y="336" font-size="12" fill="#263238">build_task / merge_task</text>
+    <text x="522" y="355" font-size="12" fill="#263238">deprecate_doc_task / export_task</text>
+    <text x="522" y="374" font-size="12" fill="#263238">update_task / ingest_task</text>
+    <text x="522" y="393" font-size="12" fill="#263238">_finish_job(): 结果回写 job 表</text>
+    <text x="522" y="412" font-size="12" fill="#263238">worker_main(): serve worker 启动</text>
+    <text x="522" y="431" font-size="11" fill="#546E7A">HTTP async 载荷 camelCase → snake_case</text>
+    <text x="522" y="450" font-size="11" fill="#546E7A">(_TASK_FIELDS 映射，不透传 http 专有字段)</text>
+  </g>
+
+  <g>
+    <rect x="880" y="292" width="300" height="210" rx="8" fill="#E8F5E9" stroke="#2E7D32" stroke-width="1.5"/>
+    <rect x="880" y="292" width="300" height="24" rx="8" fill="#2E7D32"/>
+    <text x="1030" y="309" text-anchor="middle" font-size="13" font-weight="bold" fill="#FFFFFF">mcp_server.py（stdio）</text>
+    <text x="892" y="336" font-size="12" fill="#263238">serve_mcp(): stdin JSON-RPC 循环</text>
+    <text x="892" y="355" font-size="12" fill="#263238">_tool_handlers(service):</text>
+    <text x="892" y="374" font-size="12" fill="#263238">  wiki_create / wiki_build …</text>
+    <text x="892" y="393" font-size="12" fill="#263238">_handle_request():</text>
+    <text x="892" y="412" font-size="12" fill="#263238">  tools/list + tools/call 分发</text>
+    <text x="892" y="431" font-size="12" fill="#263238">_text_content(): 文本结果包装</text>
+  </g>
+
+  <g>
+    <rect x="1220" y="292" width="300" height="210" rx="8" fill="#E8F5E9" stroke="#2E7D32" stroke-width="1.5"/>
+    <rect x="1220" y="292" width="300" height="24" rx="8" fill="#2E7D32"/>
+    <text x="1370" y="309" text-anchor="middle" font-size="13" font-weight="bold" fill="#FFFFFF">grpc_server.py</text>
+    <text x="1232" y="336" font-size="12" fill="#263238">wiki.v1.WikiService（gRPC）</text>
+    <text x="1232" y="355" font-size="12" fill="#263238">proto/wiki/v1/wiki.proto 生成 stub</text>
+    <text x="1232" y="374" font-size="12" fill="#263238">与方法面同源：</text>
+    <text x="1232" y="393" font-size="12" fill="#263238">  runtime.get_service()</text>
+    <text x="1232" y="412" font-size="12" fill="#263238">错误 → gRPC status 映射</text>
+  </g>
+
+  <!-- http_app -> celery async 箭头 -->
+  <line x1="470" y1="340" x2="508" y2="340" stroke="#455A64" stroke-width="2" stroke-dasharray="5,4" marker-end="url(#arrow)"/>
+  <text x="478" y="325" font-size="11" fill="#546E7A" text-anchor="middle">async</text>
+
+  <!-- Row2 -> Row3 箭头 -->
+  <line x1="255" y1="502" x2="255" y2="568" stroke="#455A64" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="675" y1="502" x2="675" y2="568" stroke="#455A64" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="1030" y1="502" x2="1030" y2="568" stroke="#455A64" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="1370" y1="502" x2="1370" y2="568" stroke="#455A64" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- ============ Row 3: 运行时公共组件 ============ -->
+  <text x="40" y="562" font-size="13" font-weight="bold" fill="#8D6E00">运行时公共组件（全局共享）</text>
+
+  <g>
+    <rect x="40" y="582" width="280" height="76" rx="8" fill="#FFF8E1" stroke="#8D6E00" stroke-width="1.5"/>
+    <text x="52" y="604" font-size="12.5" font-weight="bold" fill="#6D4C00">runtime.py</text>
+    <text x="52" y="623" font-size="11.5" fill="#263238">get_service() / get_store()</text>
+    <text x="52" y="641" font-size="11.5" fill="#263238">RLock 进程级单例 ③</text>
+  </g>
+  <g>
+    <rect x="352" y="582" width="280" height="76" rx="8" fill="#FFF8E1" stroke="#8D6E00" stroke-width="1.5"/>
+    <text x="364" y="604" font-size="12.5" font-weight="bold" fill="#6D4C00">protocol.py</text>
+    <text x="364" y="623" font-size="11.5" fill="#263238">ok() / error() / new_trace_id()</text>
+    <text x="364" y="641" font-size="11.5" fill="#263238">envelope 对齐 open-ikc</text>
+  </g>
+  <g>
+    <rect x="664" y="582" width="280" height="76" rx="8" fill="#FFF8E1" stroke="#8D6E00" stroke-width="1.5"/>
+    <text x="676" y="604" font-size="12.5" font-weight="bold" fill="#6D4C00">errors.py</text>
+    <text x="676" y="623" font-size="11.5" fill="#263238">OpenWikiError：200001/200404</text>
+    <text x="676" y="641" font-size="11.5" fill="#263238">200409 / 200500 码表</text>
+  </g>
+  <g>
+    <rect x="976" y="582" width="280" height="76" rx="8" fill="#FFF8E1" stroke="#8D6E00" stroke-width="1.5"/>
+    <text x="988" y="604" font-size="12.5" font-weight="bold" fill="#6D4C00">config.py</text>
+    <text x="988" y="623" font-size="11.5" fill="#263238">Settings：db_path / data_dir</text>
+    <text x="988" y="641" font-size="11.5" fill="#263238">openwiki_bin / provider / model_id</text>
+  </g>
+  <g>
+    <rect x="1288" y="582" width="280" height="76" rx="8" fill="#FFF8E1" stroke="#8D6E00" stroke-width="1.5"/>
+    <text x="1300" y="604" font-size="12.5" font-weight="bold" fill="#6D4C00">logging_setup.py</text>
+    <text x="1300" y="623" font-size="11.5" fill="#263238">configure_logging(level,</text>
+    <text x="1300" y="641" font-size="11.5" fill="#263238">log_center 日志中心上报)</text>
+  </g>
+
+  <!-- runtime -> service -->
+  <line x1="180" y1="658" x2="180" y2="736" stroke="#455A64" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="188" y="700" font-size="12" font-weight="bold" fill="#C62828">③ 注入单例服务</text>
+
+  <!-- ============ Row 4: 应用层 + 适配层 ============ -->
+  <text x="40" y="734" font-size="13" font-weight="bold" fill="#6A1B9A">应用服务层 application/</text>
+  <text x="960" y="734" font-size="13" font-weight="bold" fill="#E65100">基础设施适配层 adapters/</text>
+
+  <g>
+    <rect x="40" y="740" width="880" height="210" rx="8" fill="#F3E5F5" stroke="#6A1B9A" stroke-width="1.5"/>
+    <rect x="40" y="740" width="880" height="24" rx="8" fill="#6A1B9A"/>
+    <text x="480" y="757" text-anchor="middle" font-size="13" font-weight="bold" fill="#FFFFFF">class OpenWikiService（构造注入 SqliteWikiStore + Settings，用例返回普通 dict）</text>
+    <text x="52" y="784" font-size="12" fill="#263238">wiki CRUD: create_wiki / get_wiki / delete_wiki / list_wikis</text>
+    <text x="52" y="803" font-size="12" font-weight="bold" fill="#4A148C">④ build_from_doc(docId, markdown, wikiConfig)：按文档建页（主流程）</text>
+    <text x="52" y="822" font-size="12" fill="#263238">merge_records / deprecate_doc（增量合并 / 废弃）</text>
+    <text x="52" y="841" font-size="12" fill="#263238">查询: tree / page / search / stat / export</text>
+    <text x="52" y="860" font-size="12" fill="#263238">异步: create_job / run_job / get_job / list_jobs（写 job 表）</text>
+    <text x="52" y="879" font-size="12" fill="#263238">私有: _require_wiki / _record_from_page_dict / _paginate</text>
+    <text x="52" y="898" font-size="11.5" fill="#546E7A">内部: validate_wiki_config → openwiki_available? → 内核合成 or 规则切页 → 入库 → 废弃旧页</text>
+    <text x="52" y="917" font-size="11.5" fill="#546E7A">写源文件 sources/{docId}.md 后调用 run_update（HOME=wiki_root 实现多租户隔离）</text>
+  </g>
+
+  <g>
+    <rect x="960" y="740" width="560" height="210" rx="8" fill="#FFF3E0" stroke="#E65100" stroke-width="1.5"/>
+    <rect x="960" y="740" width="560" height="24" rx="8" fill="#E65100"/>
+    <text x="1240" y="757" text-anchor="middle" font-size="13" font-weight="bold" fill="#FFFFFF">adapters/openwiki.py（守卫式，内核不可用不影响核心能力）</text>
+    <text x="972" y="784" font-size="12" font-weight="bold" fill="#BF360C">⑤ run_update(wiki_root, message)</text>
+    <text x="972" y="803" font-size="12" fill="#263238">   subprocess: openwiki personal --update（stdin 关闭自动退出）</text>
+    <text x="972" y="822" font-size="12" font-weight="bold" fill="#BF360C">⑥ parse_okf_pages(wiki_dir)</text>
+    <text x="972" y="841" font-size="12" fill="#263238">   OKF v0.2 Markdown 解析：front matter + 正文 + 互链</text>
+    <text x="972" y="860" font-size="12" font-weight="bold" fill="#BF360C">⑦ generate_pages_rule(markdown, config)</text>
+    <text x="972" y="879" font-size="12" fill="#263238">   降级：按 granularity 确定性切页，离线可用</text>
+    <text x="972" y="898" font-size="12" fill="#263238">openwiki_available() / run_ingest(connector)</text>
+    <text x="972" y="917" font-size="12" fill="#263238">_extract_links / extract_fields（白名单字段抽取）</text>
+  </g>
+
+  <!-- service -> adapters 三条箭头 -->
+  <line x1="920" y1="790" x2="956" y2="790" stroke="#E65100" stroke-width="2" marker-end="url(#arrow-orange)"/>
+  <line x1="920" y1="845" x2="956" y2="845" stroke="#E65100" stroke-width="2" marker-end="url(#arrow-orange)"/>
+  <line x1="920" y1="900" x2="956" y2="900" stroke="#E65100" stroke-width="2" marker-end="url(#arrow-orange)"/>
+  <text x="938" y="775" font-size="11" fill="#E65100" text-anchor="middle">⑤</text>
+  <text x="938" y="832" font-size="11" fill="#E65100" text-anchor="middle">⑥</text>
+  <text x="938" y="887" font-size="11" fill="#E65100" text-anchor="middle">⑦</text>
+
+  <!-- service -> domain / store -->
+  <line x1="255" y1="950" x2="255" y2="1006" stroke="#455A64" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="263" y="984" font-size="12" font-weight="bold" fill="#C62828">⑧ 领域建模</text>
+  <line x1="725" y1="950" x2="725" y2="1006" stroke="#455A64" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="733" y="984" font-size="12" font-weight="bold" fill="#C62828">⑨ 持久化</text>
+
+  <!-- ============ Row 5: 领域层 + 持久层 ============ -->
+  <text x="40" y="1002" font-size="13" font-weight="bold" fill="#00838F">领域层 domain/</text>
+  <text x="510" y="1002" font-size="13" font-weight="bold" fill="#C62828">持久层 persistence/</text>
+
+  <g>
+    <rect x="40" y="1010" width="430" height="180" rx="8" fill="#E0F7FA" stroke="#00838F" stroke-width="1.5"/>
+    <rect x="40" y="1010" width="430" height="24" rx="8" fill="#00838F"/>
+    <text x="255" y="1027" text-anchor="middle" font-size="13" font-weight="bold" fill="#FFFFFF">领域模型与规则</text>
+    <text x="52" y="1054" font-size="12" font-weight="bold" fill="#006064">models.py: WikiMeta / WikiPageRecord</text>
+    <text x="52" y="1073" font-size="11.5" fill="#263238">   frozen dataclass · to_dict / from_dict</text>
+    <text x="52" y="1092" font-size="12" font-weight="bold" fill="#006064">ids.py: wiki_id / page_id / normalize_title</text>
+    <text x="52" y="1111" font-size="11.5" fill="#263238">   stableKey 归一化 + pageId 派生（kbId+stableKey）</text>
+    <text x="52" y="1130" font-size="12" font-weight="bold" fill="#006064">wiki_config.py: validate_wiki_config()</text>
+    <text x="52" y="1149" font-size="11.5" fill="#263238">   granularity / linkMode / dedup / extractFields</text>
+    <text x="52" y="1168" font-size="11.5" fill="#263238">merge.py: 页面合并规则（dedup=merge）</text>
+  </g>
+
+  <g>
+    <rect x="510" y="1010" width="430" height="180" rx="8" fill="#FFEBEE" stroke="#C62828" stroke-width="1.5"/>
+    <rect x="510" y="1010" width="430" height="24" rx="8" fill="#C62828"/>
+    <text x="725" y="1027" text-anchor="middle" font-size="13" font-weight="bold" fill="#FFFFFF">class SqliteWikiStore（单连接 + 互斥锁）</text>
+    <text x="522" y="1054" font-size="12" fill="#263238">create_wiki / get_wiki_or_raise / list_wikis / delete_wiki</text>
+    <text x="522" y="1073" font-size="12" font-weight="bold" fill="#B71C1C">upsert_page(record, dedup="merge") / get_page / list_pages</text>
+    <text x="522" y="1092" font-size="12" font-weight="bold" fill="#B71C1C">deprecate_doc_pages(): 增量废弃旧页</text>
+    <text x="522" y="1111" font-size="12" fill="#263238">build_tree(): parentPageId 挂接页面树 / search(): 评分排序</text>
+    <text x="522" y="1130" font-size="12" fill="#263238">create_job / update_job（异步任务表）</text>
+    <text x="522" y="1149" font-size="12" fill="#263238">wiki_root() / openwiki_wiki_dir(): 实例目录定位</text>
+    <text x="522" y="1172" font-size="11.5" fill="#546E7A">表: wikis / pages / jobs（engine.db）</text>
+  </g>
+
+  <!-- store -> SQLite -->
+  <line x1="725" y1="1190" x2="725" y2="1246" stroke="#455A64" stroke-width="2" marker-end="url(#arrow)"/>
+  <!-- store -> filesystem (dashed diagonal) -->
+  <line x1="560" y1="1190" x2="330" y2="1246" stroke="#455A64" stroke-width="2" stroke-dasharray="5,4" marker-end="url(#arrow)"/>
+  <text x="470" y="1230" font-size="11" fill="#546E7A" text-anchor="middle">wiki_root 目录读写</text>
+
+  <!-- adapters -> 内核 -->
+  <line x1="1240" y1="950" x2="1240" y2="1246" stroke="#E65100" stroke-width="2" stroke-dasharray="6,4" marker-end="url(#arrow-orange)"/>
+  <text x="1248" y="1100" font-size="11.5" fill="#E65100">⑤ subprocess 调用</text>
+
+  <!-- ============ Row 6: 外部依赖 ============ -->
+  <text x="40" y="1242" font-size="13" font-weight="bold" fill="#546E7A">外部依赖</text>
+
+  <g>
+    <rect x="40" y="1250" width="430" height="160" rx="8" fill="#ECEFF1" stroke="#546E7A" stroke-width="1.5"/>
+    <rect x="40" y="1250" width="430" height="24" rx="8" fill="#546E7A"/>
+    <text x="255" y="1267" text-anchor="middle" font-size="13" font-weight="bold" fill="#FFFFFF">文件系统 data/wikis/{wikiId}/</text>
+    <text x="52" y="1294" font-size="12" fill="#263238">sources/{docId}.md（原始文档落盘）</text>
+    <text x="52" y="1313" font-size="12" fill="#263238">.openwiki/wiki/（内核生成的 OKF Markdown）</text>
+    <text x="52" y="1332" font-size="11.5" fill="#546E7A">index.md / log.md 为保留页（解析时跳过）</text>
+    <text x="52" y="1351" font-size="11.5" fill="#546E7A">HOME=wiki_root 实现多租户隔离</text>
+  </g>
+
+  <g>
+    <rect x="510" y="1250" width="430" height="160" rx="8" fill="#ECEFF1" stroke="#546E7A" stroke-width="1.5"/>
+    <rect x="510" y="1250" width="430" height="24" rx="8" fill="#546E7A"/>
+    <text x="725" y="1267" text-anchor="middle" font-size="13" font-weight="bold" fill="#FFFFFF">SQLite engine.db</text>
+    <text x="522" y="1294" font-size="12" fill="#263238">wikis 表：实例元信息（config JSON）</text>
+    <text x="522" y="1313" font-size="12" fill="#263238">pages 表：页面（stableKey / status / sourceDocs）</text>
+    <text x="522" y="1332" font-size="12" fill="#263238">jobs 表：异步任务状态轮询</text>
+  </g>
+
+  <g>
+    <rect x="960" y="1250" width="560" height="160" rx="8" fill="#ECEFF1" stroke="#546E7A" stroke-width="1.5"/>
+    <rect x="960" y="1250" width="560" height="24" rx="8" fill="#546E7A"/>
+    <text x="1240" y="1267" text-anchor="middle" font-size="13" font-weight="bold" fill="#FFFFFF">OpenWiki 内核（外部进程）</text>
+    <text x="972" y="1294" font-size="12" fill="#263238">openwiki personal --update &lt;message&gt;（LLM 合成页面）</text>
+    <text x="972" y="1313" font-size="12" fill="#263238">OPENWIKI_PROVIDER / OPENWIKI_MODEL_ID 环境注入</text>
+    <text x="972" y="1332" font-size="12" fill="#263238">产物落盘 .openwiki/wiki/ → ⑥ parse_okf_pages 解析回收入库</text>
+    <text x="972" y="1351" font-size="11.5" fill="#546E7A">不可用/失败时 → ⑦ 规则切页降级（mode=rule）</text>
+  </g>
+
+  <!-- 内核 -> 文件系统 -->
+  <line x1="960" y1="1330" x2="474" y2="1330" stroke="#546E7A" stroke-width="2" stroke-dasharray="5,4" marker-end="url(#arrow)"/>
+  <text x="717" y="1322" font-size="11" fill="#546E7A" text-anchor="middle">生成 OKF Markdown</text>
+
+  <!-- ============ 图例：主流程 ============ -->
+  <rect x="40" y="1440" width="1480" height="140" rx="8" fill="#FFFFFF" stroke="#B0BEC5" stroke-width="1"/>
+  <text x="56" y="1466" font-size="14" font-weight="bold" fill="#263238">主流程图例 —— build_from_doc（POST /api/v1/wiki/wikis/{id}/build）</text>
+  <text x="56" y="1490" font-size="12" fill="#263238">① 客户端(SDK/CLI/MCP/gRPC)发起请求　② 接口层统一 envelope{traceId,errCode,errMsg,data}　③ runtime 注入 OpenWikiService 单例</text>
+  <text x="56" y="1511" font-size="12" fill="#263238">④ _require_wiki + validate_wiki_config　⑤ openwiki 可用 → run_update 子进程合成（HOME=wiki_root 多租户隔离）</text>
+  <text x="56" y="1532" font-size="12" fill="#263238">⑥ parse_okf_pages 解析 OKF Markdown；不可用则 ⑦ generate_pages_rule 规则切页降级（mode=rule）</text>
+  <text x="56" y="1553" font-size="12" fill="#263238">⑧ WikiPageRecord 领域建模（pageId/stableKey/parentPageId）　⑨ upsert_page + deprecate_doc_pages 增量废弃　⑩ envelope 响应返回</text>
+  <text x="56" y="1574" font-size="12" fill="#6A1B9A">异步路径：POST /api/v1/wiki/jobs → job 表 → Celery build_task（worker）→ 同一 OpenWikiService → _finish_job 回写结果 → 轮询 GET /jobs/{id}</text>
+</svg>

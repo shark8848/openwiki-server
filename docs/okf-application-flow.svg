@@ -1,0 +1,335 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1560" height="1560" viewBox="0 0 1560 1560" font-family="PingFang SC, Microsoft YaHei, Noto Sans CJK SC, sans-serif">
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto">
+      <path d="M0,0 L10,4 L0,8 Z" fill="#455A64"/>
+    </marker>
+    <marker id="arrow-purple" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto">
+      <path d="M0,0 L10,4 L0,8 Z" fill="#6A1B9A"/>
+    </marker>
+    <marker id="arrow-orange" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto">
+      <path d="M0,0 L10,4 L0,8 Z" fill="#E65100"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="1560" height="1560" fill="#FAFAFA"/>
+  <text x="780" y="40" text-anchor="middle" font-size="23" font-weight="bold" fill="#263238">OpenWiki OKF 知识管理应用图 —— 文档进，概念页出，知识成网</text>
+  <text x="780" y="64" text-anchor="middle" font-size="13" fill="#78909C">先切分 → 再标注 → 再互链 → 后检索（OKF v0.2 · openwiki-server）</text>
+
+  <!-- ============ Band 1: 业务输入 ============ -->
+  <text x="40" y="102" font-size="14" font-weight="bold" fill="#1565C0">① 业务输入 —— 把原始文档交给知识库</text>
+
+  <g>
+    <rect x="40" y="112" width="720" height="150" rx="8" fill="#E3F2FD" stroke="#1565C0" stroke-width="1.5"/>
+    <rect x="40" y="112" width="720" height="26" rx="8" fill="#1565C0"/>
+    <text x="400" y="130" text-anchor="middle" font-size="13" font-weight="bold" fill="#FFFFFF">源文档 Doc（docId + title + tags + Markdown 正文）</text>
+    <g>
+      <rect x="64" y="152" width="200" height="94" rx="6" fill="#FFFFFF" stroke="#90CAF9" stroke-width="1.5"/>
+      <path d="M92,166 h72 v10 h10 v34 h-82 Z" fill="#BBDEFB" stroke="#1565C0"/>
+      <text x="102" y="182" font-size="11" fill="#1565C0">MD</text>
+      <text x="76" y="200" font-size="12.5" font-weight="bold" fill="#263238">产品手册_v3.md</text>
+      <text x="76" y="220" font-size="11" fill="#546E7A"># 产品手册</text>
+      <text x="76" y="236" font-size="11" fill="#546E7A">## 安装 / ## 升级</text>
+    </g>
+    <g>
+      <rect x="284" y="152" width="200" height="94" rx="6" fill="#FFFFFF" stroke="#90CAF9" stroke-width="1.5"/>
+      <path d="M312,166 h72 v10 h10 v34 h-82 Z" fill="#BBDEFB" stroke="#1565C0"/>
+      <text x="322" y="182" font-size="11" fill="#1565C0">MD</text>
+      <text x="296" y="200" font-size="12.5" font-weight="bold" fill="#263238">API 接口文档.md</text>
+      <text x="296" y="220" font-size="11" fill="#546E7A">## 鉴权</text>
+      <text x="296" y="236" font-size="11" fill="#546E7A">## 错误码</text>
+    </g>
+    <g>
+      <rect x="504" y="152" width="200" height="94" rx="6" fill="#FFFFFF" stroke="#90CAF9" stroke-width="1.5"/>
+      <path d="M532,166 h72 v10 h10 v34 h-82 Z" fill="#BBDEFB" stroke="#1565C0"/>
+      <text x="542" y="182" font-size="11" fill="#1565C0">MD</text>
+      <text x="516" y="200" font-size="12.5" font-weight="bold" fill="#263238">会议纪要 0901.md</text>
+      <text x="516" y="220" font-size="11" fill="#546E7A">无标题结构</text>
+      <text x="516" y="236" font-size="11" fill="#546E7A">→ auto 整篇单页</text>
+    </g>
+  </g>
+
+  <g>
+    <rect x="800" y="112" width="720" height="150" rx="8" fill="#E3F2FD" stroke="#1565C0" stroke-width="1.5"/>
+    <rect x="800" y="112" width="720" height="26" rx="8" fill="#1565C0"/>
+    <text x="1160" y="130" text-anchor="middle" font-size="13" font-weight="bold" fill="#FFFFFF">连接器摄取 ingest（长耗时走异步任务，凭 jobId 轮询）</text>
+    <g>
+      <rect x="824" y="152" width="150" height="44" rx="6" fill="#FFFFFF" stroke="#90CAF9" stroke-width="1.5"/>
+      <text x="899" y="170" text-anchor="middle" font-size="12" font-weight="bold" fill="#1565C0">git-repo</text>
+      <text x="899" y="188" text-anchor="middle" font-size="11" fill="#546E7A">仓库文档同步</text>
+    </g>
+    <g>
+      <rect x="994" y="152" width="150" height="44" rx="6" fill="#FFFFFF" stroke="#90CAF9" stroke-width="1.5"/>
+      <text x="1069" y="170" text-anchor="middle" font-size="12" font-weight="bold" fill="#1565C0">web-search</text>
+      <text x="1069" y="188" text-anchor="middle" font-size="11" fill="#546E7A">网络资料抓取</text>
+    </g>
+    <g>
+      <rect x="1164" y="152" width="150" height="44" rx="6" fill="#FFFFFF" stroke="#90CAF9" stroke-width="1.5"/>
+      <text x="1239" y="170" text-anchor="middle" font-size="12" font-weight="bold" fill="#1565C0">notion</text>
+      <text x="1239" y="188" text-anchor="middle" font-size="11" fill="#546E7A">在线知识库导入</text>
+    </g>
+    <g>
+      <rect x="1334" y="152" width="162" height="44" rx="6" fill="#FFFFFF" stroke="#90CAF9" stroke-width="1.5" stroke-dasharray="4,3"/>
+      <text x="1415" y="170" text-anchor="middle" font-size="12" font-weight="bold" fill="#546E7A">更多连接器 …</text>
+      <text x="1415" y="188" text-anchor="middle" font-size="11" fill="#546E7A">…由内核提供</text>
+    </g>
+    <text x="1160" y="210" text-anchor="middle" font-size="10.5" fill="#C62828">ingest / update 均需内核可用；build 无内核自动规则降级</text>
+    <text x="824" y="228" font-size="11.5" fill="#546E7A">知识库 KB（kbId）→ 创建 Wiki 实例（wikiId）：独立配置 wikiConfig + 独立存储 data/wikis/{wikiId}/</text>
+    <text x="824" y="248" font-size="11.5" fill="#546E7A">业务文档整体太粗：没法按问题命中、更新难追溯、跨文档引用靠人工 —— 所以要先「概念化」</text>
+  </g>
+
+  <!-- Band1 -> Band2 -->
+  <line x1="400" y1="262" x2="400" y2="308" stroke="#455A64" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="1160" y1="262" x2="1160" y2="308" stroke="#455A64" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="410" y="292" font-size="12" font-weight="bold" fill="#C62828">build_from_doc(docId, markdown, wikiConfig)</text>
+  <text x="1170" y="292" font-size="12" font-weight="bold" fill="#C62828">update / ingest</text>
+
+  <!-- ============ Band 2: 构建车间 ============ -->
+  <text x="40" y="330" font-size="14" font-weight="bold" fill="#6A1B9A">② 构建车间 —— 先切分：一篇长文档 → 若干自洽的概念页</text>
+
+  <g>
+    <rect x="40" y="340" width="720" height="230" rx="8" fill="#F3E5F5" stroke="#6A1B9A" stroke-width="1.5"/>
+    <rect x="40" y="340" width="720" height="26" rx="8" fill="#6A1B9A"/>
+    <text x="400" y="358" text-anchor="middle" font-size="13" font-weight="bold" fill="#FFFFFF">通道 A：OpenWiki 内核（LLM 合成，优先）→ mode = "openwiki"</text>
+    <text x="56" y="392" font-size="12.5" font-weight="bold" fill="#4A148C">1) 原文落盘：sources/{docId}.md（构建时的输入，可追溯）</text>
+    <text x="56" y="414" font-size="12.5" font-weight="bold" fill="#4A148C">2) LLM 整理：openwiki personal --update（HOME = wiki_root，多租户隔离）</text>
+    <text x="56" y="436" font-size="12.5" font-weight="bold" fill="#4A148C">3) 产出 OKF 概念包：.openwiki/wiki/ 下的概念 .md 文件</text>
+    <text x="56" y="462" font-size="11.5" fill="#546E7A">内核按语义提炼概念：同一知识在不同批次构建中拿到同一个稳定 ID</text>
+    <text x="56" y="482" font-size="11.5" fill="#546E7A">成功且解析出页面 → 本批知识走 LLM 精加工</text>
+    <rect x="56" y="506" width="688" height="44" rx="6" fill="#EDE7F6" stroke="#B39DDB" stroke-width="1"/>
+    <text x="68" y="524" font-size="11.5" fill="#4A148C">wikiConfig 旋钮：granularity 切多细 · extractFields 抽哪些字段 · linkMode 抽不抽链接 · dedup 同名怎么办 · template 提示模板</text>
+    <text x="68" y="542" font-size="11.5" fill="#4A148C">非法取值直接拒绝（参数错误），业务方需先校验</text>
+  </g>
+
+  <g>
+    <rect x="800" y="340" width="720" height="230" rx="8" fill="#E0F7FA" stroke="#00838F" stroke-width="1.5"/>
+    <rect x="800" y="340" width="720" height="26" rx="8" fill="#00838F"/>
+    <text x="1160" y="358" text-anchor="middle" font-size="13" font-weight="bold" fill="#FFFFFF">通道 B：规则切页（确定性 · 离线兜底）→ mode = "rule"</text>
+    <text x="816" y="392" font-size="12.5" font-weight="bold" fill="#006064">granularity 切页粒度：</text>
+    <text x="816" y="412" font-size="11.5" fill="#263238">page 整篇 1 页 · heading H1 根页 / H2 子页 · section 章节树（同 heading）</text>
+    <text x="816" y="432" font-size="11.5" fill="#263238">auto（默认）：有 H1/H2 按标题拆；完全没有标题则整篇单页</text>
+    <text x="816" y="458" font-size="12.5" font-weight="bold" fill="#006064">extractFields 字段抽取（白名单）：</text>
+    <text x="816" y="478" font-size="11.5" fill="#263238">正文匹配「键：值」且键命中白名单 → fields（如 负责人：张三）</text>
+    <text x="816" y="504" font-size="12.5" font-weight="bold" fill="#006064">linkMode 链接模式：</text>
+    <text x="816" y="524" font-size="11.5" fill="#263238">auto 解析 [[标题]] 与 [文字](xxx.md) 生成 links（去重、指向稳定 ID）· off 不抽链</text>
+    <text x="816" y="550" font-size="11.5" fill="#546E7A">始终可用：无内核、无 LLM 也保证全链路离线可跑</text>
+  </g>
+
+  <!-- 守卫式降级箭头 A -> B -->
+  <line x1="760" y1="455" x2="796" y2="455" stroke="#E65100" stroke-width="2.5" stroke-dasharray="6,4" marker-end="url(#arrow-orange)"/>
+  <text x="778" y="440" font-size="11" font-weight="bold" fill="#E65100" text-anchor="middle">守卫式</text>
+  <text x="778" y="478" font-size="10.5" fill="#E65100" text-anchor="middle">降级</text>
+
+  <!-- Band2 -> Band3 -->
+  <line x1="780" y1="570" x2="780" y2="616" stroke="#455A64" stroke-width="2.5" marker-end="url(#arrow)"/>
+  <text x="792" y="600" font-size="12" font-weight="bold" fill="#C62828">parse_okf_pages：解析概念包（index.md / log.md 跳过，不生成页面）</text>
+
+  <!-- ============ Band 3: OKF 知识包 ============ -->
+  <text x="40" y="638" font-size="14" font-weight="bold" fill="#E65100">③ OKF 知识包 —— 再标注、再互链：目录即知识包，概念页即知识单元</text>
+
+  <g>
+    <rect x="40" y="648" width="430" height="326" rx="8" fill="#FFF3E0" stroke="#E65100" stroke-width="1.5"/>
+    <rect x="40" y="648" width="430" height="26" rx="8" fill="#E65100"/>
+    <text x="255" y="666" text-anchor="middle" font-size="13" font-weight="bold" fill="#FFFFFF">知识包目录树（Markdown 目录树）</text>
+    <text x="56" y="698" font-size="12.5" fill="#263238" font-family="Menlo, Consolas, monospace">data/wikis/{wikiId}/</text>
+    <text x="76" y="720" font-size="12" fill="#546E7A" font-family="Menlo, Consolas, monospace">sources/</text>
+    <text x="200" y="720" font-size="11" fill="#78909C">原始文档落盘区（输入）</text>
+    <text x="76" y="742" font-size="12" fill="#263238" font-family="Menlo, Consolas, monospace">.openwiki/wiki/</text>
+    <text x="200" y="742" font-size="11" fill="#78909C">OKF 概念包（产出）</text>
+    <text x="96" y="764" font-size="12" fill="#8D6E00" font-family="Menlo, Consolas, monospace">index.md</text>
+    <text x="220" y="764" font-size="11" fill="#78909C">目录页 · 渐进披露入口 · 非概念</text>
+    <text x="96" y="786" font-size="12" fill="#8D6E00" font-family="Menlo, Consolas, monospace">log.md</text>
+    <text x="220" y="786" font-size="11" fill="#78909C">更新历史 · 非概念</text>
+    <text x="96" y="808" font-size="12" fill="#263238" font-family="Menlo, Consolas, monospace">安装.md</text>
+    <text x="220" y="808" font-size="11" fill="#78909C">概念文件（可检索、可引用）</text>
+    <text x="96" y="830" font-size="12" fill="#263238" font-family="Menlo, Consolas, monospace">升级.md</text>
+    <text x="220" y="830" font-size="11" fill="#78909C">概念文件</text>
+    <text x="96" y="852" font-size="12" fill="#263238" font-family="Menlo, Consolas, monospace">sub/yyy.md</text>
+    <text x="220" y="852" font-size="11" fill="#78909C">任意层级皆可</text>
+    <rect x="56" y="876" width="398" height="56" rx="6" fill="#FFF8E1" stroke="#FFB74D" stroke-width="1"/>
+    <text x="68" y="898" font-size="11.5" fill="#8D6E00">index.md / log.md / . 开头的文件：任意层级一律跳过</text>
+    <text x="68" y="918" font-size="11.5" fill="#8D6E00">其余 .md 都是概念 —— 导航与记录勿写成概念文件</text>
+  </g>
+
+  <g>
+    <rect x="500" y="648" width="430" height="326" rx="8" fill="#FFF3E0" stroke="#E65100" stroke-width="1.5"/>
+    <rect x="500" y="648" width="430" height="26" rx="8" fill="#E65100"/>
+    <text x="715" y="666" text-anchor="middle" font-size="13" font-weight="bold" fill="#FFFFFF">概念文件解剖：front matter + 正文</text>
+    <rect x="520" y="688" width="390" height="212" rx="6" fill="#FFFFFF" stroke="#FFB74D" stroke-width="1"/>
+    <text x="534" y="712" font-size="11.5" fill="#6D4C00" font-family="Menlo, Consolas, monospace">---</text>
+    <text x="534" y="730" font-size="11.5" fill="#263238" font-family="Menlo, Consolas, monospace">title: 产品手册 · 安装</text>
+    <text x="534" y="748" font-size="11.5" fill="#263238" font-family="Menlo, Consolas, monospace">stableKey: 安装</text>
+    <text x="534" y="766" font-size="11.5" fill="#263238" font-family="Menlo, Consolas, monospace">type: Playbook</text>
+    <text x="534" y="784" font-size="11.5" fill="#263238" font-family="Menlo, Consolas, monospace">tags: [产品手册, 安装, 操作]</text>
+    <text x="534" y="802" font-size="11.5" fill="#263238" font-family="Menlo, Consolas, monospace">sources: [{id: doc_1, …}]</text>
+    <text x="534" y="820" font-size="11.5" fill="#263238" font-family="Menlo, Consolas, monospace">status: active</text>
+    <text x="534" y="838" font-size="11.5" fill="#6A1B9A" font-family="Menlo, Consolas, monospace">负责人: 张三</text>
+    <text x="726" y="838" font-size="10.5" fill="#6A1B9A">← 扩展键 → fields</text>
+    <text x="534" y="856" font-size="11.5" fill="#6D4C00" font-family="Menlo, Consolas, monospace">---</text>
+    <text x="534" y="876" font-size="11.5" fill="#263238" font-family="Menlo, Consolas, monospace"># 安装</text>
+    <text x="534" y="894" font-size="11.5" fill="#263238" font-family="Menlo, Consolas, monospace">安装前确认环境变量…[[环境要求]]</text>
+    <text x="520" y="924" font-size="11.5" fill="#8D6E00">系统键：title / stableKey / type / tags / sources / status</text>
+    <text x="520" y="942" font-size="11" fill="#6A1B9A">generated / stale_after（内核管理）→ 不入 fields</text>
+    <text x="520" y="959" font-size="11" fill="#6A1B9A">其余扩展键保留进 fields —— 不认识的键不拒绝</text>
+  </g>
+
+  <g>
+    <rect x="960" y="648" width="560" height="326" rx="8" fill="#FFF3E0" stroke="#E65100" stroke-width="1.5"/>
+    <rect x="960" y="648" width="560" height="26" rx="8" fill="#E65100"/>
+    <text x="1240" y="666" text-anchor="middle" font-size="13" font-weight="bold" fill="#FFFFFF">概念互链 → 知识网（[[标题]] / [文字](x.md)）</text>
+    <!-- 知识网节点 -->
+    <line x1="1240" y1="790" x2="1090" y2="740" stroke="#E65100" stroke-width="1.8"/>
+    <line x1="1240" y1="790" x2="1390" y2="740" stroke="#E65100" stroke-width="1.8"/>
+    <line x1="1240" y1="790" x2="1130" y2="880" stroke="#E65100" stroke-width="1.8"/>
+    <line x1="1240" y1="790" x2="1350" y2="880" stroke="#E65100" stroke-width="1.8"/>
+    <line x1="1090" y1="740" x2="1130" y2="880" stroke="#BF360C" stroke-width="1.4" stroke-dasharray="4,3"/>
+    <line x1="1390" y1="740" x2="1350" y2="880" stroke="#BF360C" stroke-width="1.4" stroke-dasharray="4,3"/>
+    <line x1="1090" y1="740" x2="1390" y2="740" stroke="#BF360C" stroke-width="1.4" stroke-dasharray="4,3"/>
+    <g>
+      <ellipse cx="1240" cy="790" rx="70" ry="26" fill="#E65100"/>
+      <text x="1240" y="795" text-anchor="middle" font-size="12.5" font-weight="bold" fill="#FFFFFF">产品手册</text>
+    </g>
+    <g>
+      <ellipse cx="1090" cy="740" rx="52" ry="22" fill="#FFE0B2" stroke="#E65100" stroke-width="1.5"/>
+      <text x="1090" y="745" text-anchor="middle" font-size="12" fill="#BF360C">安装</text>
+    </g>
+    <g>
+      <ellipse cx="1390" cy="740" rx="52" ry="22" fill="#FFE0B2" stroke="#E65100" stroke-width="1.5"/>
+      <text x="1390" y="745" text-anchor="middle" font-size="12" fill="#BF360C">升级</text>
+    </g>
+    <g>
+      <ellipse cx="1130" cy="880" rx="52" ry="22" fill="#FFE0B2" stroke="#E65100" stroke-width="1.5"/>
+      <text x="1130" y="885" text-anchor="middle" font-size="12" fill="#BF360C">环境要求</text>
+    </g>
+    <g>
+      <ellipse cx="1350" cy="880" rx="52" ry="22" fill="#FFE0B2" stroke="#E65100" stroke-width="1.5"/>
+      <text x="1350" y="885" text-anchor="middle" font-size="12" fill="#BF360C">回滚</text>
+    </g>
+    <text x="976" y="930" font-size="11.5" fill="#8D6E00">互链被解析为 links（title + pageId）：标题去重、按标题排序、指向稳定 ID</text>
+    <text x="976" y="948" font-size="11.5" fill="#8D6E00">index.md / log.md 不是概念，不作链接目标；链接即影响面分析入口</text>
+  </g>
+
+  <!-- Band3 -> Band4 -->
+  <line x1="780" y1="978" x2="780" y2="1012" stroke="#455A64" stroke-width="2.5" marker-end="url(#arrow)"/>
+  <text x="792" y="995" font-size="12" font-weight="bold" fill="#C62828">按稳定 ID upsert 落库（受 dedup 约束）→ 增量废弃旧页</text>
+
+  <!-- ============ Band 4: 落库与生命周期 ============ -->
+  <text x="40" y="1016" font-size="14" font-weight="bold" fill="#00838F">④ 引擎落库 —— 稳定 ID、溯源与生命周期</text>
+
+  <g>
+    <rect x="40" y="1026" width="500" height="180" rx="8" fill="#E0F7FA" stroke="#00838F" stroke-width="1.5"/>
+    <rect x="40" y="1026" width="500" height="26" rx="8" fill="#00838F"/>
+    <text x="290" y="1044" text-anchor="middle" font-size="13" font-weight="bold" fill="#FFFFFF">稳定 ID：增量更新的地基</text>
+    <text x="56" y="1074" font-size="12" fill="#263238" font-family="Menlo, Consolas, monospace">wikiId = "wiki_" + sha1(kbId)[:12]</text>
+    <text x="56" y="1094" font-size="12" fill="#263238" font-family="Menlo, Consolas, monospace">pageId = "wiki_" + sha1(kbId + ":" + stableKey)[:12]</text>
+    <text x="56" y="1116" font-size="11.5" fill="#546E7A">标题规范化：去非文字数字与下划线、转小写；空则 untitled</text>
+    <text x="56" y="1136" font-size="11.5" fill="#546E7A">同名即合并语义：同一知识单元跨批次保持同一 ID</text>
+    <text x="56" y="1160" font-size="12" font-weight="bold" fill="#006064">dedup：merge 标签并集/来源并集 · overwrite 以新为准 · skip 保留老页面不动</text>
+    <text x="56" y="1186" font-size="11.5" fill="#546E7A">老页面的 pageId 与创建时间始终保留（merge / overwrite）</text>
+  </g>
+
+  <g>
+    <rect x="570" y="1026" width="450" height="180" rx="8" fill="#E0F7FA" stroke="#00838F" stroke-width="1.5"/>
+    <rect x="570" y="1026" width="450" height="26" rx="8" fill="#00838F"/>
+    <text x="795" y="1044" text-anchor="middle" font-size="13" font-weight="bold" fill="#FFFFFF">页面三件证据：可追溯的知识</text>
+    <text x="586" y="1074" font-size="12" font-weight="bold" fill="#006064">sourceDocs</text>
+    <text x="586" y="1093" font-size="11.5" fill="#263238">本页由哪些源文档产生 → 文档下线影响谁</text>
+    <text x="586" y="1122" font-size="12" font-weight="bold" fill="#006064">fields</text>
+    <text x="586" y="1141" font-size="11.5" fill="#263238">扩展键 / 白名单抽取的业务字段（负责人…）</text>
+    <text x="586" y="1170" font-size="12" font-weight="bold" fill="#006064">links</text>
+    <text x="586" y="1189" font-size="11.5" fill="#263238">引用的概念页 → 概念网导航与影响面分析</text>
+  </g>
+
+  <g>
+    <rect x="1050" y="1026" width="470" height="180" rx="8" fill="#E0F7FA" stroke="#00838F" stroke-width="1.5"/>
+    <rect x="1050" y="1026" width="470" height="26" rx="8" fill="#00838F"/>
+    <text x="1285" y="1044" text-anchor="middle" font-size="13" font-weight="bold" fill="#FFFFFF">生命周期：draft/stable → active · deprecated 下线</text>
+    <g>
+      <rect x="1066" y="1064" width="130" height="34" rx="17" fill="#C8E6C9" stroke="#2E7D32" stroke-width="1.5"/>
+      <text x="1131" y="1086" text-anchor="middle" font-size="12" font-weight="bold" fill="#1B5E20">active 可检索</text>
+    </g>
+    <g>
+      <rect x="1380" y="1064" width="126" height="34" rx="17" fill="#FFCDD2" stroke="#C62828" stroke-width="1.5"/>
+      <text x="1443" y="1086" text-anchor="middle" font-size="12" font-weight="bold" fill="#B71C1C">deprecated</text>
+    </g>
+    <line x1="1196" y1="1081" x2="1376" y2="1081" stroke="#C62828" stroke-width="1.8" stroke-dasharray="5,4" marker-end="url(#arrow)"/>
+    <text x="1286" y="1072" font-size="10.5" fill="#C62828" text-anchor="middle">下线</text>
+    <text x="1066" y="1124" font-size="11.5" fill="#263238">增量废弃（安全网）：仅当页面由该文档「独家贡献」</text>
+    <text x="1066" y="1144" font-size="11.5" fill="#263238">且本次构建未再现 → 才标 deprecated</text>
+    <text x="1066" y="1172" font-size="11.5" fill="#546E7A">多文档共同贡献的页面不会被单次更新误杀</text>
+    <text x="1066" y="1192" font-size="11.5" fill="#546E7A">另有 deprecate_doc：业务显式废弃某文档全部产出</text>
+  </g>
+
+  <!-- Band4 -> Band5 -->
+  <line x1="780" y1="1206" x2="780" y2="1252" stroke="#455A64" stroke-width="2.5" marker-end="url(#arrow)"/>
+  <text x="792" y="1236" font-size="12" font-weight="bold" fill="#C62828">后检索：面向业务消费的查询与展示</text>
+
+  <!-- ============ Band 5: 消费窗口 ============ -->
+  <text x="40" y="1274" font-size="14" font-weight="bold" fill="#1565C0">⑤ 消费窗口 —— 树、搜索、统计、导出，五类能力面随取随用</text>
+
+  <g>
+    <rect x="40" y="1284" width="1480" height="120" rx="8" fill="#E3F2FD" stroke="#1565C0" stroke-width="1.5"/>
+    <rect x="40" y="1284" width="1480" height="26" rx="8" fill="#1565C0"/>
+    <text x="780" y="1302" text-anchor="middle" font-size="13" font-weight="bold" fill="#FFFFFF">查询与展示语义（只含 active 页面）</text>
+    <g>
+      <rect x="64" y="1322" width="270" height="66" rx="6" fill="#FFFFFF" stroke="#90CAF9" stroke-width="1.5"/>
+      <text x="78" y="1344" font-size="12.5" font-weight="bold" fill="#1565C0">tree 页面树</text>
+      <text x="78" y="1362" font-size="11" fill="#546E7A">按 parentPageId 挂接子页面</text>
+      <text x="78" y="1379" font-size="11" fill="#546E7A">无父页为根，根节点分页</text>
+    </g>
+    <g>
+      <rect x="354" y="1322" width="270" height="66" rx="6" fill="#FFFFFF" stroke="#90CAF9" stroke-width="1.5"/>
+      <text x="368" y="1344" font-size="12.5" font-weight="bold" fill="#1565C0">search 加权检索</text>
+      <text x="368" y="1362" font-size="11" fill="#546E7A">标题 +10 · 正文 +3 · 链接标题 +1</text>
+      <text x="368" y="1379" font-size="11" fill="#546E7A">可附加 tag 过滤 · 分数降序</text>
+    </g>
+    <g>
+      <rect x="644" y="1322" width="270" height="66" rx="6" fill="#FFFFFF" stroke="#90CAF9" stroke-width="1.5"/>
+      <text x="658" y="1344" font-size="12.5" font-weight="bold" fill="#1565C0">stat 统计</text>
+      <text x="658" y="1362" font-size="11" fill="#546E7A">总页数 · active/deprecated 数</text>
+      <text x="658" y="1379" font-size="11" fill="#546E7A">链接总数 · 标签分布</text>
+    </g>
+    <g>
+      <rect x="934" y="1322" width="270" height="66" rx="6" fill="#FFFFFF" stroke="#90CAF9" stroke-width="1.5"/>
+      <text x="948" y="1344" font-size="12.5" font-weight="bold" fill="#1565C0">page 单页详情</text>
+      <text x="948" y="1362" font-size="11" fill="#546E7A">完整 markdown · fields · tags</text>
+      <text x="948" y="1379" font-size="11" fill="#546E7A">links · sourceDocs · 状态与时间</text>
+    </g>
+    <g>
+      <rect x="1224" y="1322" width="272" height="66" rx="6" fill="#FFFFFF" stroke="#90CAF9" stroke-width="1.5"/>
+      <text x="1238" y="1344" font-size="12.5" font-weight="bold" fill="#1565C0">export 机器可读导出</text>
+      <text x="1238" y="1362" font-size="11" fill="#546E7A">jsonl（默认，每行一个 active 页）· json</text>
+      <text x="1238" y="1379" font-size="11" fill="#546E7A">OKF 目录包原生在 .openwiki/wiki/ 可直取</text>
+    </g>
+  </g>
+
+  <!-- 五类能力面 -->
+  <g>
+    <rect x="40" y="1420" width="1480" height="66" rx="8" fill="#ECEFF1" stroke="#546E7A" stroke-width="1.5"/>
+    <text x="56" y="1446" font-size="12.5" font-weight="bold" fill="#37474F">五类能力面：</text>
+    <g>
+      <rect x="150" y="1434" width="250" height="38" rx="19" fill="#FFFFFF" stroke="#1565C0" stroke-width="1.3"/>
+      <text x="275" y="1458" text-anchor="middle" font-size="12" font-weight="bold" fill="#1565C0">HTTP :18011 /api/v1/wiki</text>
+    </g>
+    <g>
+      <rect x="420" y="1434" width="210" height="38" rx="19" fill="#FFFFFF" stroke="#2E7D32" stroke-width="1.3"/>
+      <text x="525" y="1458" text-anchor="middle" font-size="12" font-weight="bold" fill="#2E7D32">gRPC :50052 WikiService</text>
+    </g>
+    <g>
+      <rect x="650" y="1434" width="250" height="38" rx="19" fill="#FFFFFF" stroke="#6A1B9A" stroke-width="1.3"/>
+      <text x="775" y="1458" text-anchor="middle" font-size="12" font-weight="bold" fill="#6A1B9A">Celery 异步任务（jobId 轮询）</text>
+    </g>
+    <g>
+      <rect x="920" y="1434" width="260" height="38" rx="19" fill="#FFFFFF" stroke="#E65100" stroke-width="1.3"/>
+      <text x="1050" y="1458" text-anchor="middle" font-size="12" font-weight="bold" fill="#E65100">MCP · wiki_* 工具（AI 客户端）</text>
+    </g>
+    <g>
+      <rect x="1200" y="1434" width="230" height="38" rx="19" fill="#FFFFFF" stroke="#00838F" stroke-width="1.3"/>
+      <text x="1315" y="1458" text-anchor="middle" font-size="12" font-weight="bold" fill="#00838F">CLI · openwiki-server</text>
+    </g>
+    <text x="1446" y="1458" font-size="12" fill="#546E7A">…</text>
+  </g>
+
+  <!-- ============ 底部心法图例 ============ -->
+  <rect x="40" y="1502" width="1480" height="44" rx="8" fill="#FFFFFF" stroke="#B0BEC5" stroke-width="1"/>
+  <text x="780" y="1530" text-anchor="middle" font-size="13" font-weight="bold" fill="#263238">四步心法：① 先切分 —— 概念页是知识最小单位，文档是输入、概念页是产出　② 再标注 —— front matter 记录元数据，扩展键进 fields　③ 再互链 —— [[标题]] 织成知识网　④ 后检索 —— 树 / 搜索 / 统计 / 导出</text>
+</svg>
