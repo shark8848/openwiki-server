@@ -161,7 +161,8 @@ with OpenWikiServerClient(base_url="http://127.0.0.1:18011") as client:
 
 `OPENWIKI_SERVER_DATA_DIR` / `_DB_PATH` / `_HTTP_HOST` / `_HTTP_PORT`（18011）/
 `_GRPC_HOST` / `_GRPC_PORT`（50052）/ `_CELERY_BROKER` / `_CELERY_BACKEND` /
-`_OPENWIKI_BIN` / `_OPENWIKI`（0 关闭内核）/ `_PROVIDER` / `_MODEL_ID` /
+`_OPENWIKI_BIN` / `_OPENWIKI`（0 关闭内核）/ `_PROVIDER` / `_MODEL_ID`
+（默认 `deepseek-v4-flash`，与本地 LLM 网关可用模型对齐，可用环境变量覆盖）/
 `_UPDATE_TIMEOUT` / `_LOG_LEVEL`；Docker 额外使用 `HAPROXY_STATS_USER` /
 `HAPROXY_STATS_PASSWORD`（HAProxy stats 登录）与 `OPENWIKI_HTTP_PORT` /
 `OPENWIKI_GRPC_PORT` / `HAPROXY_STATS_PORT`（宿主端口映射）。

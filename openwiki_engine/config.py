@@ -55,7 +55,10 @@ class Settings:
     openwiki_provider: str = field(
         default_factory=lambda: _env("OPENWIKI_SERVER_PROVIDER", "openai")
     )
-    openwiki_model_id: str = field(default_factory=lambda: _env("OPENWIKI_SERVER_MODEL_ID", ""))
+    # 默认模型与本地 LLM 网关可用模型对齐；可用 OPENWIKI_SERVER_MODEL_ID 覆盖
+    openwiki_model_id: str = field(
+        default_factory=lambda: _env("OPENWIKI_SERVER_MODEL_ID", "deepseek-v4-flash")
+    )
     openwiki_update_timeout: int = field(
         default_factory=lambda: int(_env("OPENWIKI_SERVER_UPDATE_TIMEOUT", "600"))
     )
