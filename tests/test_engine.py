@@ -443,6 +443,34 @@ def test_celery_tasks(tmp_path):
         runtime.reset_runtime()
 
 
+def test_celery_task_failure_marks_job_failed(tmp_path):
+    """任务抛异常时必须把作业落 failed + error：否则作业永远停在 pending，调用方只能靠轮询超时猜。"""
+    import os
+
+    from openwiki_engine import runtime
+    from openwiki_engine.errors import NotFoundError
+    from openwiki_engine.interfaces.celery_app import build_task
+
+    os.environ["OPENWIKI_SERVER_OPENWIKI"] = "0"
+    runtime.reset_runtime()
+    try:
+        rt_svc = runtime.get_service(str(tmp_path / "celery-fail.db"))
+        job = rt_svc.submit_job(
+            "build", "wiki_missing", {"docId": "d1", "title": "任务页", "markdown": "正文。"}
+        )
+        with pytest.raises(NotFoundError):
+            build_task.run(
+                "wiki_missing", doc_id="d1", title="任务页", markdown="正文。", job_id=job["jobId"]
+            )
+        stored = rt_svc.get_job(job["jobId"])
+        assert stored["status"] == "failed"
+        assert stored["error"]
+        assert stored["result"] is None
+    finally:
+        os.environ.pop("OPENWIKI_SERVER_OPENWIKI", None)
+        runtime.reset_runtime()
+
+
 def test_parse_okf_pages_datetime_fields(tmp_path) -> None:
     """OKF front matter 中的 YAML 日期应归一化为 ISO 字符串（否则响应序列化 500）。"""
     from openwiki_engine.adapters.openwiki import parse_okf_pages

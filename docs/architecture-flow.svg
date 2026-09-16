@@ -86,7 +86,7 @@
     <text x="522" y="336" font-size="12" fill="#263238">build_task / merge_task</text>
     <text x="522" y="355" font-size="12" fill="#263238">deprecate_doc_task / export_task</text>
     <text x="522" y="374" font-size="12" fill="#263238">update_task / ingest_task</text>
-    <text x="522" y="393" font-size="12" fill="#263238">_finish_job(): 结果回写 job 表</text>
+    <text x="522" y="393" font-size="12" fill="#263238">_run_job(): 终态回写 job 表（success/failed）</text>
     <text x="522" y="412" font-size="12" fill="#263238">worker_main(): serve worker 启动</text>
     <text x="522" y="431" font-size="11" fill="#546E7A">HTTP async 载荷 camelCase → snake_case</text>
     <text x="522" y="450" font-size="11" fill="#546E7A">(_TASK_FIELDS 映射，不透传 http 专有字段)</text>
@@ -292,5 +292,5 @@
   <text x="56" y="1511" font-size="12" fill="#263238">④ _require_wiki + validate_wiki_config　⑤ openwiki 可用 → run_update 子进程合成（HOME=wiki_root 多租户隔离）</text>
   <text x="56" y="1532" font-size="12" fill="#263238">⑥ parse_okf_pages 解析 OKF Markdown；不可用则 ⑦ generate_pages_rule 规则切页降级（mode=rule）</text>
   <text x="56" y="1553" font-size="12" fill="#263238">⑧ WikiPageRecord 领域建模（pageId/stableKey/parentPageId）　⑨ upsert_page + deprecate_doc_pages 增量废弃　⑩ envelope 响应返回</text>
-  <text x="56" y="1574" font-size="12" fill="#6A1B9A">异步路径：POST /api/v1/wiki/jobs → job 表 → Celery build_task（worker）→ 同一 OpenWikiService → _finish_job 回写结果 → 轮询 GET /jobs/{id}</text>
+  <text x="56" y="1574" font-size="12" fill="#6A1B9A">异步路径：POST /api/v1/wiki/jobs → job 表 → Celery build_task（worker）→ 同一 OpenWikiService → _run_job 回写终态（success+result / failed+error）→ 轮询 GET /jobs/{id}</text>
 </svg>

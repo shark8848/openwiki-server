@@ -108,9 +108,13 @@ bash scripts/docker_smoke.sh
   `redis://:<密码>@host.docker.internal:6379/0`（未启用 worker 时 app 不主动连接）。
 - `OPENWIKI_SERVER_OPENWIKI=0` 可强制离线规则切页（镜像内已含 Node 22 + openwiki 内核，
   默认启用、LLM 失败自动降级）。
-- 异步加工：build/merge 等请求带 `async=1` 时登记为 job 并经 Celery 投递（broker 不可达时
+- 异步加工：build/merge 等请求带 `async=1` 时登记为 job 并经 Celery 投递（broker 不可达/未配时
   保持 `pending`，可调 `POST /api/v1/wiki/jobs/{job_id}/run` 手动执行；轮询
-  `GET /api/v1/wiki/jobs/{job_id}` 查看结果）。
+  `GET /api/v1/wiki/jobs/{job_id}` 查看结果）。任务终态由 `celery_app._run_job` 统一回写：
+  成功 `success` + `result`，**失败 `failed` + `error`**（异常仍向上抛，Celery 保持 FAILURE 语义）——
+  只在成功时回写会让失败作业永远停在 `pending`，调用方只能靠轮询超时猜。
+  注意 HTTP 进程与 worker 必须用**同一套能连 broker 的解释器**：缺 `redis-py` 时 `send_task`
+  直接失败，作业只登记不投递（日志 `未投递到 broker`）。
 
 ## 五类接口
 
