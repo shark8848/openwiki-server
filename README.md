@@ -26,6 +26,8 @@ pip install openwiki-server[all]                   # 全部依赖
 pip install openwiki-server-sdk                    # 仅应用集成 SDK（httpx，应用侧集成）
 ```
 
+- 队列依赖（强制契约）：`celery[redis]==5.6.3` / `kombu==5.6.2` / `redis==6.2.0`（权威 `/home/sharkyai/依赖版本强制契约.md`；三条成组变更，禁止放宽为 `>=`）。
+
 引擎与独立承载服务发布为 `openwiki-server`，应用集成 SDK 独立发布为
 `openwiki-server-sdk`（仅依赖 `httpx`）。SDK 快速开始见
 [`sdk/python/README.md`](sdk/python/README.md)。

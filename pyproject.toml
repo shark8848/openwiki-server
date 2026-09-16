@@ -34,8 +34,11 @@ server = [
     "pydantic>=2.0",
     "grpcio>=1.81",
     "protobuf>=5.29",
-    "celery>=5.3",
-    "redis>=5.0",
+    # 异步任务队列依赖组（强制契约：/home/sharkyai/依赖版本强制契约.md）
+    # 三条成组锁定；redis==6.2.0：kombu 5.6 的 [redis] extra 要求 redis>=4.5.2,<6.5，8.x 解析失败
+    "celery[redis]==5.6.3",
+    "kombu==5.6.2",
+    "redis==6.2.0",
     "typer>=0.12",
 ]
 log-center = [
@@ -47,8 +50,11 @@ all = [
     "pydantic>=2.0",
     "grpcio>=1.81",
     "protobuf>=5.29",
-    "celery>=5.3",
-    "redis>=5.0",
+    # 异步任务队列依赖组（强制契约：/home/sharkyai/依赖版本强制契约.md）
+    # 三条成组锁定；redis==6.2.0：kombu 5.6 的 [redis] extra 要求 redis>=4.5.2,<6.5，8.x 解析失败
+    "celery[redis]==5.6.3",
+    "kombu==5.6.2",
+    "redis==6.2.0",
     "typer>=0.12",
     "ikc-log-center>=1.4.22,<2",
 ]
