@@ -4,6 +4,30 @@
 
 参考：PyUploadX 同款离线发布流程（`../pyuploadx/docs/deploy-offline.md`）。
 
+## 0. 一键发布 / 一键部署（推荐）
+
+本机执行一次脚本即可完成“构建 → 导出 → 打包 →（可选）推送远端并拉起服务”：
+
+```bash
+cd /home/sharkyai/openwiki-server
+# 仅构建 + 导出 + 打包（产物在 docker/images/，可 scp/rsync/U 盘线下传输）
+bash scripts/publish-offline.sh --build
+
+# 构建 + 打包 + 推送到远端并 ssh 一键 load/compose up（需免密登录）
+REMOTE_HOST=10.88.155.31 bash scripts/publish-offline.sh --build --push
+```
+
+产物与校验：
+
+```text
+docker/images/openwiki-server_1.0.0.tar           # 镜像 tar（docker load -i）
+docker/images/openwiki-server-compose-1.0.0.tgz   # 部署配置包（compose + env 模板 + 手册 + 远端脚本）
+docker/images/openwiki-server-1.0.0-SHA256SUMS.txt# sha256 校验清单
+```
+
+远端可选参数：`REMOTE_USER`（默认 root）/ `REMOTE_DIR`（默认 `/opt/openwiki-server`）/ `SSH_PORT` / `TRANSFER=scp`，
+可写入 `config/remote.env` 固化。目标服务器侧的等价手动命令见第 3/4 节。
+
 ## 1. 镜像清单（单节点模式）
 
 | 镜像:标签 | 大小 | 来源 | 用途 |
@@ -30,7 +54,7 @@ bash scripts/build_docker.sh --export
 # 产物：docker/images/openwiki-server_1.0.0.tar
 ```
 
-镜像已内置 `openwiki-server 0.3.0` 与 `ikc-log-center`（log-center extra），支持 IKC Log Center 远程日志投递（见第 7 节）。
+镜像已内置 `openwiki-server`（引擎 0.3.4）与 `ikc-log-center`（log-center extra），支持 IKC Log Center 远程日志投递（见第 7 节）。
 
 ### 2.1 手动导出（复用已有镜像）
 
@@ -42,30 +66,42 @@ docker save -o docker/images/openwiki-server_1.0.0.tar openwiki-server:1.0.0
 
 ### 2.2 部署配置打包（镜像之外还需要 compose/配置）
 
+一键打包（推荐，等价于 `publish-offline.sh` 的 bundle 阶段）：
+
 ```bash
 cd /home/sharkyai/openwiki-server
-tar czf docker/images/openwiki-server-compose.tgz \
+tar czf docker/images/openwiki-server-compose-1.0.0.tgz \
   docker-compose.yml \
   config/engine.example.yaml \
-  docs/deploy-offline.md
+  config/env.remote.example \
+  docs/deploy-offline.md \
+  scripts/deploy-remote.sh
+cd docker/images && sha256sum openwiki-server_1.0.0.tar openwiki-server-compose-1.0.0.tgz \
+  > openwiki-server-1.0.0-SHA256SUMS.txt
 ```
 
 ## 3. 传输到目标服务器
 
 ```bash
 # 示例（scp），或使用 rsync / U 盘
-scp docker/images/openwiki-server_1.0.0.tar root@SERVER:/opt/openwiki-server/
-scp docker/images/openwiki-server-compose.tgz root@SERVER:/opt/openwiki-server/
+scp docker/images/openwiki-server_1.0.0.tar \
+    docker/images/openwiki-server-compose-1.0.0.tgz \
+    docker/images/openwiki-server-1.0.0-SHA256SUMS.txt \
+    root@SERVER:/opt/openwiki-server/_release/
 ```
 
 ## 4. 目标服务器导入
 
 ```bash
 mkdir -p /opt/openwiki-server && cd /opt/openwiki-server
-tar xzf /opt/openwiki-server/openwiki-server-compose.tgz
+tar xzf _release/openwiki-server-compose-1.0.0.tgz
+cd _release && sha256sum -c openwiki-server-1.0.0-SHA256SUMS.txt && cd ..
 
 # 导入镜像（目标机无需 Dockerfile / 构建依赖）
-docker load -i /opt/openwiki-server/openwiki-server_1.0.0.tar
+docker load -i _release/openwiki-server_1.0.0.tar
+
+# 或一键（load + compose up --no-build + 健康检查；首次自动生成 .env）
+bash scripts/deploy-remote.sh --release-dir _release
 
 # 校验：与第 1 节清单一致
 docker images | grep openwiki-server
