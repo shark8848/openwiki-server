@@ -95,3 +95,26 @@
 - stat pageCount=4/active=4、tree total=4、search(litellm)=4 hits。
 - page 详情正常：OKF front matter datetime 字段以 ISO 字符串返回（`2026-09-02T09:34:55+00:00`），
   datetime 序列化修复在远端生效。
+
+## 09-16 core 数据面回写（引擎 → core 内部写通道）
+
+- 新增 `openwiki_engine/adapters/core_writeback.py`：构建完成后把**已决策页面**回写 core
+  `POST /internal/wiki/build`（契约单一来源：ikc-core-service `docs/API接口与任务契约.md §2.5`，
+  实现见 core `domain/services/wiki_write_service.py`）。
+  - 只投递 core 契约字段（`_PAGE_FIELDS`，core 侧 `extra=forbid`）：`title/stableKey/level/parentPageId/
+    parentStableKey/unitId/docId/tags/fields/links/sourceDocs/markdown/versionId`，本地字段
+    （`pageId/wikiId/status/时间戳`）不外投；`parentPageId` 直接透传（与 SDK `wiki_ids` 派生同值），
+    避免 core 二次派生。
+  - 开关：未配置 `IKC_CORE_BASE_URL` 时整体关闭（返回 `None`，返回体形状与既有行为完全一致）；
+    `IKC_CORE_WRITEBACK=0` 可显式关闭。鉴权头 `X-Internal-Token` = core `IKC_CORE_ADMIN_TOKEN`。
+  - 回写失败**不阻断**本地构建（返回 `{"ok": false, "error": ...}` 并记 warning），保证引擎可独立运行。
+  - `ENGINE_VERSION` 优先读 repo `pyproject.toml`（可编辑安装的 dist 元数据会滞后，实测 0.1.0 vs 0.3.4）。
+- `application/service.py::build_from_doc`：启用时在返回体追加 `writeback` 字段（未启用不追加）。
+- 分层口径：**抽什么在引擎**（切页/字段抽取/出链、OKF 上游），**怎么落地在 core**（稳定键 upsert、
+  revision 递增与版本快照、doc 级增量废弃、build_log、审计）——落地语义只此一处实现，避免各引擎
+  各写一套（G-05 `format=ttl` 类跨仓漂移的根因）。
+- 验证：新增 `tests/test_core_writeback.py`（7 例：字段收窄、开关关闭、失败不阻断、版本漂移护栏、
+  `http.server` 桩）；`pytest tests -q` → **32 passed, 1 skipped**。
+- 跨仓实测（ikc-demo 知识库）：`build` 返回 `writeback={"ok": true, "created": 3, ...}`，core W-04 读面
+  `pageCount=3 / active=3 / linkCount=5`。**坑**：回写用的 `docId` 必须是 core 已登记的文档——
+  core 读面按来源文档可读性过滤，用未登记 docId 建的页会被判定不可见（表现为 `pageCount=0`）。

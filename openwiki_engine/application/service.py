@@ -17,6 +17,7 @@ from ..adapters.openwiki import (
     run_ingest,
     run_update,
 )
+from ..adapters import core_writeback
 from ..config import Settings
 from ..domain.ids import normalize_title, page_id, stable_key_from_filename, wiki_id
 from ..domain.models import WikiMeta, WikiPageRecord
@@ -219,7 +220,7 @@ class OpenWikiService:
             active_keys = {record.stable_key for record in saved}
             deprecated = self.store.deprecate_doc_pages(meta.kb_id, doc_id, active_keys)
 
-        return {
+        result = {
             "wikiId": meta.wiki_id,
             "kbId": meta.kb_id,
             "docId": doc_id,
@@ -228,6 +229,18 @@ class OpenWikiService:
             "deprecated": deprecated,
             "pages": [record.to_dict() for record in saved],
         }
+        # 引擎 → core 数据面回写（合并/版本递增/废弃/审计在 core 落地）：
+        # 未配置 IKC_CORE_BASE_URL 时返回 None，返回体形状与既有行为一致。
+        writeback = core_writeback.write_pages(
+            meta.kb_id,
+            doc_id=doc_id,
+            pages=[record.to_dict() for record in saved],
+            dedup=str(config.get("dedup") or "merge"),
+            mode=mode,
+        )
+        if writeback is not None:
+            result["writeback"] = writeback
+        return result
 
     def merge_records(
         self,
