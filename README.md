@@ -50,11 +50,16 @@ cp config/pypi.env.example config/pypi.env   # 填入 OPENWIKI_PYPI_TOKEN
 ## 快速开始
 
 ```bash
-# 依赖（复用已有 venv；本机可用 semantica-graph-server/.venv）
-pip install -e . --no-build-isolation
+# 依赖：本仓自带 venv（**不要**复用别的仓库的 venv——对方解释器可能缺 redis-py，
+# 会让 HTTP/worker 的 celery 投递静默失败，作业只登记不投递、永远停在 pending）
+python3 -m venv .venv
+.venv/bin/python -m pip install -e '.[server,dev]'      # 含 HTTP/worker 全部依赖 + 队列依赖组（见「安装」小节的强制契约三条）
 
 # 启动 HTTP 服务（默认 18011）
-openwiki-server serve http
+.venv/bin/openwiki-server serve http
+
+# 异步任务：另起一个进程跑 worker（broker/backend 见 OPENWIKI_SERVER_CELERY_BROKER）
+.venv/bin/openwiki-server serve worker
 
 # CLI 走通全链路（离线规则模式）
 export OPENWIKI_SERVER_DATA_DIR=/tmp/ow-demo OPENWIKI_SERVER_OPENWIKI=0

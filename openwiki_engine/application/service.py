@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import logging
+import sys
 import uuid
 from dataclasses import replace
 from pathlib import Path
@@ -440,7 +441,13 @@ class OpenWikiService:
         try:
             celery_app.send_task(task_name, kwargs=kwargs, retry=False)
             return True
-        except Exception:
+        except Exception as exc:
+            # 必须带上原因：缺 redis-py（解释器不对）与 broker 不可达在这里长得一模一样，
+            # 只回 False 会让「作业只登记不投递」变成一个查不出来的 pending。
+            hint = ""
+            if "redis" not in sys.modules:
+                hint = "（当前解释器缺 redis-py：请用本仓 .venv 启动 HTTP 与 worker）"
+            logger.warning("job %s 投递失败：%s: %s%s", job_id, type(exc).__name__, exc, hint)
             return False
 
     def run_job(self, job_id: str) -> dict[str, Any]:
