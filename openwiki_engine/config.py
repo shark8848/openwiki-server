@@ -46,6 +46,9 @@ class Settings:
     celery_backend: str = field(
         default_factory=lambda: _env("OPENWIKI_SERVER_CELERY_BACKEND", "redis://localhost:6379/0")
     )
+    celery_queue: str = field(
+        default_factory=lambda: _env("OPENWIKI_SERVER_CELERY_QUEUE", "openwiki_server")
+    )
     mcp_transport: str = field(default_factory=lambda: _env("OPENWIKI_SERVER_MCP_TRANSPORT", "stdio"))
     log_level: str = field(default_factory=lambda: _env("OPENWIKI_SERVER_LOG_LEVEL", "INFO"))
     openwiki_bin: str = field(default_factory=lambda: _env("OPENWIKI_SERVER_OPENWIKI_BIN", ""))
