@@ -20,7 +20,7 @@ REMOTE_HOST=10.88.155.31 bash scripts/publish-offline.sh --build --push
 产物与校验：
 
 ```text
-docker/images/openwiki-server_1.0.0.tar           # 镜像 tar（docker load -i）
+docker/images/ikc-openwiki-server_1.0.0.tar       # 镜像 tar（docker load -i）
 docker/images/openwiki-server-compose-1.0.0.tgz   # 部署配置包（compose + env 模板 + 手册 + 远端脚本）
 docker/images/openwiki-server-1.0.0-SHA256SUMS.txt# sha256 校验清单
 ```
@@ -32,7 +32,7 @@ docker/images/openwiki-server-1.0.0-SHA256SUMS.txt# sha256 校验清单
 
 | 镜像:标签 | 大小 | 来源 | 用途 |
 | --- | --- | --- | --- |
-| `openwiki-server:1.0.0` | 磁盘约 1.17 GB（导出 tar 约 227 MB） | `Dockerfile` 单阶段 | 单镜像内含 Python 引擎（HTTP/gRPC/Celery/MCP/CLI 五面接口）+ Node `openwiki` 内核 + HAProxy 代理层 |
+| `ikc-openwiki-server:1.0.0` | 磁盘约 1.17 GB（导出 tar 约 227 MB） | `Dockerfile` 单阶段 | 单镜像内含 Python 引擎（HTTP/gRPC/Celery/MCP/CLI 五面接口）+ Node `openwiki` 内核 + HAProxy 代理层 |
 
 容器内拓扑（引擎只监听回环，对外唯一入口为 HAProxy）：
 
@@ -51,7 +51,7 @@ client -> HAProxy(:8080 HTTP / :50052 gRPC / :8404 stats)
 ```bash
 cd /home/sharkyai/openwiki-server
 bash scripts/build_docker.sh --export
-# 产物：docker/images/openwiki-server_1.0.0.tar
+# 产物：docker/images/ikc-openwiki-server_1.0.0.tar
 ```
 
 镜像已内置 `openwiki-server`（引擎 0.3.4）与 `ikc-log-center`（log-center extra），支持 IKC Log Center 远程日志投递（见第 7 节）。
@@ -61,7 +61,7 @@ bash scripts/build_docker.sh --export
 ```bash
 cd /home/sharkyai/openwiki-server
 mkdir -p docker/images
-docker save -o docker/images/openwiki-server_1.0.0.tar openwiki-server:1.0.0
+docker save -o docker/images/ikc-openwiki-server_1.0.0.tar ikc-openwiki-server:1.0.0
 ```
 
 ### 2.2 部署配置打包（镜像之外还需要 compose/配置）
@@ -76,7 +76,7 @@ tar czf docker/images/openwiki-server-compose-1.0.0.tgz \
   config/env.remote.example \
   docs/deploy-offline.md \
   scripts/deploy-remote.sh
-cd docker/images && sha256sum openwiki-server_1.0.0.tar openwiki-server-compose-1.0.0.tgz \
+cd docker/images && sha256sum ikc-openwiki-server_1.0.0.tar openwiki-server-compose-1.0.0.tgz \
   > openwiki-server-1.0.0-SHA256SUMS.txt
 ```
 
@@ -84,7 +84,7 @@ cd docker/images && sha256sum openwiki-server_1.0.0.tar openwiki-server-compose-
 
 ```bash
 # 示例（scp），或使用 rsync / U 盘
-scp docker/images/openwiki-server_1.0.0.tar \
+scp docker/images/ikc-openwiki-server_1.0.0.tar \
     docker/images/openwiki-server-compose-1.0.0.tgz \
     docker/images/openwiki-server-1.0.0-SHA256SUMS.txt \
     root@SERVER:/opt/openwiki-server/_release/
@@ -98,7 +98,7 @@ tar xzf _release/openwiki-server-compose-1.0.0.tgz
 cd _release && sha256sum -c openwiki-server-1.0.0-SHA256SUMS.txt && cd ..
 
 # 导入镜像（目标机无需 Dockerfile / 构建依赖）
-docker load -i _release/openwiki-server_1.0.0.tar
+docker load -i _release/ikc-openwiki-server_1.0.0.tar
 
 # 或一键（load + compose up --no-build + 健康检查；首次自动生成 .env）
 bash scripts/deploy-remote.sh --release-dir _release
@@ -265,7 +265,7 @@ docker run -d --name openwiki-server --restart unless-stopped \
   -v /opt/openwiki-server/data:/app/data \
   --env-file /opt/openwiki-server/.env \
   -p 18011:8080 -p 50052:50052 -p 8404:8404 \
-  openwiki-server:1.0.0
+  ikc-openwiki-server:1.0.0
 ```
 
 ### 8.4 Worker 容器（可选，需外部 Redis）
@@ -277,7 +277,7 @@ docker run -d --name openwiki-server-worker --restart unless-stopped \
   --add-host host.docker.internal:host-gateway \
   -v /opt/openwiki-server/data:/app/data \
   --env-file /opt/openwiki-server/.env \
-  openwiki-server:1.0.0 worker
+  ikc-openwiki-server:1.0.0 worker
 ```
 
 > worker 与 api 必须挂载同一数据目录，且 broker/backend 可达（默认连宿主 6379，
@@ -305,7 +305,7 @@ docker restart openwiki-server openwiki-server-worker
 
 # 升级：docker load 新镜像 → 删旧容器 → 重新 run（数据在宿主目录，不丢）
 docker rm -f openwiki-server openwiki-server-worker
-docker load -i openwiki-server_1.0.0.tar
+docker load -i ikc-openwiki-server_1.0.0.tar
 # 再执行 8.3 / 8.4 的 docker run
 
 # 清理（不影响数据）
@@ -335,8 +335,8 @@ bash scripts/build_docker.sh --export
 
 # 传输新 tar → 目标机导入 → 重建
 # compose 方式：数据在命名卷，重建不丢；非 compose 方式见 §8.6
-scp docker/images/openwiki-server_1.0.0.tar root@SERVER:/opt/openwiki-server/
-ssh root@SERVER 'cd /opt/openwiki-server && docker load -i openwiki-server_1.0.0.tar && docker compose up -d --no-build'
+scp docker/images/ikc-openwiki-server_1.0.0.tar root@SERVER:/opt/openwiki-server/
+ssh root@SERVER 'cd /opt/openwiki-server && docker load -i ikc-openwiki-server_1.0.0.tar && docker compose up -d --no-build'
 ```
 
 ## 11. 常用运维

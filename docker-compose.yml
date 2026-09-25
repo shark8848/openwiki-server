@@ -20,7 +20,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    image: openwiki-server:1.0.0
+    image: ikc-openwiki-server:1.0.0
     restart: unless-stopped
     extra_hosts:
       - "host.docker.internal:host-gateway"
@@ -70,7 +70,7 @@ services:
   # Celery worker（与 app 共用同一镜像与数据卷；broker/backend 使用外部 redis；
   # 启用：docker compose --profile worker up -d）
   worker:
-    image: openwiki-server:1.0.0
+    image: ikc-openwiki-server:1.0.0
     profiles: ["worker"]
     restart: unless-stopped
     extra_hosts:

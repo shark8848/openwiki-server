@@ -8,7 +8,7 @@ set -euo pipefail
 #
 # 用法（在部署目录 /opt/openwiki-server 下执行）：
 #   bash scripts/deploy-remote.sh                          # 自动 load _release/ 内镜像并 compose up
-#   bash scripts/deploy-remote.sh --release-dir _release --image openwiki-server_1.0.0.tar
+#   bash scripts/deploy-remote.sh --release-dir _release --image ikc-openwiki-server_1.0.0.tar
 #   bash scripts/deploy-remote.sh --check                  # 仅检查现状（不 load / 不重启）
 #   bash scripts/deploy-remote.sh --skip-load              # 镜像已 load，只重启服务
 #

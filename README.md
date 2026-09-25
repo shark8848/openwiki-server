@@ -95,7 +95,7 @@ openwiki-server export wiki_fb42912a4348
 ```
 
 ```bash
-# 构建镜像（openwiki-server:<package.json version>，含 openwiki 内核与 HAProxy）
+# 构建镜像（ikc-openwiki-server:<package.json version>，含 openwiki 内核与 HAProxy）
 bash scripts/build_docker.sh
 # 启动（默认入口 http://127.0.0.1:18011；stats http://127.0.0.1:8404）
 docker compose up -d

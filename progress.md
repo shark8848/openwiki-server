@@ -118,3 +118,14 @@
 - 跨仓实测（ikc-demo 知识库）：`build` 返回 `writeback={"ok": true, "created": 3, ...}`，core W-04 读面
   `pageCount=3 / active=3 / linkCount=5`。**坑**：回写用的 `docId` 必须是 core 已登记的文档——
   core 读面按来源文档可读性过滤，用未登记 docId 建的页会被判定不可见（表现为 `pageCount=0`）。
+
+## 09-25 镜像缺省 tag 改为 `ikc-*`（全栈命名口径）
+
+- 背景：ikc-demo 全栈要求**镜像名一律 `ikc-*`**（此前靠那边 `start-stack.sh` 就地补别名）。
+- 改动：`scripts/build_docker.sh` / `scripts/publish-offline.sh` / `scripts/docker_smoke.sh` 的缺省
+  `IMAGE_TAG` → `ikc-openwiki-server:<package.json version>`；`docker-compose.yml` 两处 `image:` 同步
+  （否则 `publish-offline.sh` 的 compose/IMAGE_TAG 一致性检查会直接 fail、`up -d --no-build` 也找不到镜像）；
+  `README.md` / `docs/deploy-offline.md` / `scripts/deploy-remote.sh` 用法示例同步。
+- 产物名随之变为 `docker/images/ikc-openwiki-server_1.0.0.tar`（本次只改脚本与文档，未重跑构建）。
+- 要沿用原生名可显式覆盖：`IMAGE_TAG=openwiki-server:1.0.0 bash scripts/build_docker.sh --export`。
+- 验证：四个 shell 脚本 `bash -n` 全过；`rg` 复核缺省 tag 与 compose `image:` 逐字一致。

@@ -9,7 +9,7 @@ set -euo pipefail
 #   bash scripts/build_docker.sh --export     # 构建并 docker save 导出到 docker/images/
 #
 # 环境变量：
-#   IMAGE_TAG         镜像名:标签（默认 openwiki-server:<package.json version>）
+#   IMAGE_TAG         镜像名:标签（默认 ikc-openwiki-server:<package.json version>）
 #   OPENWIKI_VERSION  openwiki 内核版本（默认取 package.json dependencies.openwiki，脱掉 ^/~）
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -42,7 +42,7 @@ if [[ -z "$VERSION" || -z "$OPENWIKI_VERSION" ]]; then
   echo "[docker] 无法从 package.json 解析版本（version=$VERSION, openwiki=$OPENWIKI_VERSION）" >&2
   exit 1
 fi
-IMAGE_TAG="${IMAGE_TAG:-openwiki-server:${VERSION}}"
+IMAGE_TAG="${IMAGE_TAG:-ikc-openwiki-server:${VERSION}}"
 
 build_args=(--build-arg "OPENWIKI_VERSION=${OPENWIKI_VERSION}")
 if [[ "$NO_CACHE" == "1" ]]; then

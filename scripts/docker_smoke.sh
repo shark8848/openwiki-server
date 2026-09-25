@@ -16,7 +16,7 @@ FORCE_BUILD=0
 [[ "${1:-}" == "--force-build" ]] && FORCE_BUILD=1
 
 VERSION="$(sed -n 's/.*"version": "\([^"]*\)".*/\1/p' package.json | head -1)"
-IMAGE_TAG="${IMAGE_TAG:-openwiki-server:${VERSION}}"
+IMAGE_TAG="${IMAGE_TAG:-ikc-openwiki-server:${VERSION}}"
 HTTP_PORT="${OPENWIKI_HTTP_PORT:-18011}"
 GRPC_PORT="${OPENWIKI_GRPC_PORT:-50052}"
 STATS_PORT="${HAPROXY_STATS_PORT:-8404}"

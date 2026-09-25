@@ -24,7 +24,7 @@ set -euo pipefail
 #   REMOTE_USER   目标 SSH 用户（默认 root）
 #   REMOTE_DIR    目标部署目录（默认 /opt/openwiki-server）
 #   SSH_PORT      SSH 端口（默认 22）
-#   IMAGE_TAG     镜像名:标签（默认 openwiki-server:<package.json version>）
+#   IMAGE_TAG     镜像名:标签（默认 ikc-openwiki-server:<package.json version>）
 #   TRANSFER      传输方式 rsync|scp（默认 rsync，缺失时自动用 scp）
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -37,7 +37,7 @@ if [[ -f config/remote.env ]]; then
 fi
 
 VERSION="$(sed -n 's/.*"version": "\([^"]*\)".*/\1/p' package.json | head -1)"
-IMAGE_TAG="${IMAGE_TAG:-openwiki-server:${VERSION}}"
+IMAGE_TAG="${IMAGE_TAG:-ikc-openwiki-server:${VERSION}}"
 IMAGES_DIR="docker/images"
 TAR_NAME="$(printf '%s' "${IMAGE_TAG%:*}" | tr '/:' '__')_${IMAGE_TAG##*:}.tar"
 TAR_PATH="${IMAGES_DIR}/${TAR_NAME}"
