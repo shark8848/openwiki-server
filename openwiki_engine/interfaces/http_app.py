@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import json
+import logging
+import time
 from datetime import date, datetime
 from typing import Any
 
@@ -11,7 +13,7 @@ from fastapi.responses import JSONResponse
 
 from ..config import Settings
 from ..errors import OpenWikiError
-from ..logging_setup import configure_logging
+from ..logging_setup import configure_logging, set_trace_id
 from ..protocol import TRACE_ID_HEADER, error, new_trace_id, ok
 from ..runtime import get_service
 
@@ -56,6 +58,35 @@ def create_app(service: Any | None = None) -> FastAPI:
     configure_logging(level=settings.log_level, log_center=settings.log_center)
     svc = service or get_service()
     app = FastAPI(title="OpenWiki Server", version="0.3.4")
+
+    access_logger = logging.getLogger("openwiki_engine.access")
+
+    @app.middleware("http")
+    async def _access_log(request: Request, call_next):
+        """请求访问日志（投递日志中心）：绑定 traceId 并记录方法/路径/状态/耗时。"""
+        tid = _trace(request)
+        set_trace_id(tid)
+        started = time.perf_counter()
+        try:
+            response = await call_next(request)
+        except Exception:
+            access_logger.exception(
+                "http.request method=%s path=%s status=500 duration_ms=%.1f",
+                request.method,
+                request.url.path,
+                (time.perf_counter() - started) * 1000,
+            )
+            raise
+        # 健康探针每 15s 一次，不进日志中心（避免淹没业务日志）
+        if request.url.path not in ("/health", "/ready"):
+            access_logger.info(
+                "http.request method=%s path=%s status=%s duration_ms=%.1f",
+                request.method,
+                request.url.path,
+                response.status_code,
+                (time.perf_counter() - started) * 1000,
+            )
+        return response
 
     @app.get("/health")
     def health() -> dict[str, Any]:

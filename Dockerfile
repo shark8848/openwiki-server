@@ -40,8 +40,17 @@ COPY openwiki_engine/ ./openwiki_engine/
 COPY proto/ ./proto/
 COPY docs/ ./docs/
 COPY config/ ./config/
+# 私有/本地固定 wheel（IKC Log Center SDK：远程日志投递，仅 log_center_sdk、不含服务端；
+# 由 scripts/build_docker.sh 预置，
+# 版本 pin 在 pyproject.toml 的 log-center extra）：先装本地 wheel 满足 == 精确 pin，
+# 随后的 `.[server,log-center]` 不再向索引请求该包（离线构建口径，与两引擎/网关一致）
+COPY docker/wheels/ /tmp/wheels/
+RUN test "$(find /tmp/wheels -maxdepth 1 -name '*.whl' | wc -l)" -ge 1 \
+    && pip install --no-cache-dir /tmp/wheels/*.whl \
+    && rm -rf /tmp/wheels
+
 # server extra：引擎运行所需（fastapi/uvicorn/grpcio/celery/pydantic/redis/typer）；
-# log-center extra：IKC Log Center 远程日志投递 SDK
+# log-center extra：IKC Log Center 远程日志投递 SDK（仅 SDK；上方已由本地 wheel 满足）
 RUN pip install --no-cache-dir ".[server,log-center]"
 
 # HAProxy 代理层：配置模板 + 入口脚本（渲染配置后同进程拉起 uvicorn + gRPC + haproxy）

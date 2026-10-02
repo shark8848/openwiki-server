@@ -44,8 +44,10 @@ server = [
     "ikc-sdk-lib==0.12.1",
     "typer>=0.12",
 ]
+# IKC Log Center SDK（远程日志投递；镜像内由 scripts/build_docker.sh 预置本地 wheel，
+# 非必需依赖——SDK 缺失时 openwiki_engine/logging_setup.py 自动降级本地日志）
 log-center = [
-    "ikc-log-center>=1.4.22,<2",
+    "ikc-log-center-sdk==2.0.30",
 ]
 all = [
     "fastapi>=0.115",
@@ -62,7 +64,7 @@ all = [
     #   pip install /home/sharkyai/ikc-sdk-lib/dist/ikc_sdk_lib-0.12.1-py3-none-any.whl
     "ikc-sdk-lib==0.12.1",
     "typer>=0.12",
-    "ikc-log-center>=1.4.22,<2",
+    "ikc-log-center-sdk==2.0.30",
 ]
 dev = [
     "pytest>=8.0",

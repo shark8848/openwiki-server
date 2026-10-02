@@ -16,5 +16,6 @@ build/
 config/pypi.env
 !config/pypi.env.example
 
-# Docker 镜像导出（docker save 产物，体积大，不入库）
+# Docker 镜像导出（docker save 产物）与构建前预置的本地 wheel（按 pyproject pin 派生，不入库）
 docker/images/
+docker/wheels/

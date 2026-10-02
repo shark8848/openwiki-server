@@ -43,6 +43,40 @@ class JsonFormatter(logging.Formatter):
         return json.dumps(payload, ensure_ascii=False, default=str)
 
 
+def set_trace_id(trace_id: str | None) -> None:
+    """绑定当前上下文 traceId（空值清除），供日志中心按 trace 串链。"""
+    trace_id_var.set(trace_id or None)
+
+
+def attach_celery_fork_hook(app: object) -> bool:
+    """给 Celery 应用注册 prefork 重建钩子（worker 专用）。
+
+    prefork 子进程只继承 handler 对象、不继承后台投递线程，worker 侧日志会静默丢失；
+    故在 ``worker_process_init`` 重新 :func:`configure_logging`（含新投递线程）。
+    注册失败返回 False，不抛异常（日志故障不得阻断 worker）。
+    """
+    try:
+        from celery.signals import worker_process_init
+    except Exception:  # pragma: no cover - 未安装 celery
+        return False
+
+    def _on_worker_fork(**_kwargs: object) -> None:
+        from .config import Settings
+
+        try:
+            settings = Settings()
+            configure_logging(level=settings.log_level, log_center=settings.log_center)
+        except Exception:  # noqa: BLE001 - 子进程日志重建失败不得阻断 worker
+            pass
+
+    try:
+        # weak=False 是硬要求：Celery 信号默认弱引用，局部函数会被 GC，钩子静默失效
+        worker_process_init.connect(_on_worker_fork, weak=False)
+    except Exception:  # pragma: no cover
+        return False
+    return True
+
+
 def configure_logging(
     level: str = "INFO",
     fmt: str = "json",

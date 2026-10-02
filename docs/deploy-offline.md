@@ -54,7 +54,7 @@ bash scripts/build_docker.sh --export
 # 产物：docker/images/ikc-openwiki-server_1.0.0.tar
 ```
 
-镜像已内置 `openwiki-server`（引擎 0.3.4）与 `ikc-log-center`（log-center extra），支持 IKC Log Center 远程日志投递（见第 7 节）。
+镜像已内置 `openwiki-server`（引擎 0.3.4）与 `ikc-log-center-sdk`（log-center extra，仅 SDK），支持 IKC Log Center 远程日志投递（见第 7 节）。
 
 ### 2.1 手动导出（复用已有镜像）
 
