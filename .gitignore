@@ -10,7 +10,11 @@ data/
 .env
 
 # PyPI 发布
-dist/
+# 只放行本仓自建 wheel（openwiki-server / openwiki-server-sdk，口径：每个仓自己构建的 .whl 允许推送）；
+# sdist 等其余 dist/ 产物不入库
+dist/*
+!dist/openwiki_server-*.whl
+!dist/openwiki_server_sdk-*.whl
 build/
 .eggs/
 config/pypi.env
