@@ -1,0 +1,347 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2200 1090" font-family="'PingFang SC','Microsoft YaHei','Noto Sans CJK SC',sans-serif">
+  <defs>
+    <linearGradient id="gCyan" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#22d3ee"/><stop offset="1" stop-color="#0891b2"/></linearGradient>
+    <linearGradient id="gBlue" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3b82f6"/><stop offset="1" stop-color="#1d4ed8"/></linearGradient>
+    <linearGradient id="gSky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0ea5e9"/><stop offset="1" stop-color="#0284c7"/></linearGradient>
+    <linearGradient id="gViolet" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8b5cf6"/><stop offset="1" stop-color="#6d28d9"/></linearGradient>
+    <linearGradient id="gIndigo" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4f46e5"/><stop offset="1" stop-color="#3730a3"/></linearGradient>
+    <linearGradient id="gSlate" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#64748b"/><stop offset="1" stop-color="#475569"/></linearGradient>
+    <marker id="arrDown" markerWidth="9" markerHeight="8" refX="4.5" refY="6" orient="auto"><path d="M0,0 L9,0 L4.5,7 Z" fill="#94a3b8"/></marker>
+    <linearGradient id="gGreen" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#10b981"/><stop offset="1" stop-color="#059669"/></linearGradient>
+    <marker id="arrowGreen" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#059669"/></marker>
+    <marker id="arrowPink" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#ec4899"/></marker>
+  </defs>
+
+  <rect x="0" y="0" width="2200" height="1090" fill="#f8fafc"/>
+  <text x="950" y="42" text-anchor="middle" font-size="24" font-weight="bold" fill="#0f172a">OpenWiki Server · 整体框架</text>
+
+  <!-- 层间连接箭头 -->
+  <g stroke="#cbd5e1" stroke-width="2">
+    <line x1="950" y1="221" x2="950" y2="233" marker-end="url(#arrDown)"/>
+    <line x1="950" y1="387" x2="950" y2="399" marker-end="url(#arrDown)"/>
+    <line x1="950" y1="543" x2="950" y2="555" marker-end="url(#arrDown)"/>
+    <line x1="950" y1="709" x2="950" y2="721" marker-end="url(#arrDown)"/>
+    <line x1="950" y1="875" x2="950" y2="887" marker-end="url(#arrDown)"/>
+  </g>
+
+  <!-- ================= BAND 1 客户端 / 入口 ================= -->
+  <g transform="translate(90,121)">
+    <rect x="0" y="0" width="44" height="44" rx="11" fill="url(#gCyan)"/>
+    <g fill="#ffffff"><circle cx="22" cy="15" r="6"/><path d="M10,34 a12,12 0 0 1 24,0 z"/></g>
+  </g>
+  <text x="112" y="185" text-anchor="middle" font-size="14" font-weight="bold" fill="#0e7490">客户端/入口</text>
+  <rect x="180" y="70" width="1560" height="150" rx="14" fill="#ecfeff" stroke="#22d3ee" stroke-width="1.5"/>
+  <g>
+    <rect x="196" y="86" width="368" height="118" rx="12" fill="#fdf2f8" stroke="#ec4899" stroke-width="1.5" stroke-dasharray="6 4"/>
+    <g transform="translate(208,96)"><rect width="22" height="22" rx="6" fill="#ec4899" opacity="0.15"/><g stroke="#be185d" stroke-width="1.6" fill="none"><circle cx="11" cy="6" r="2.6"/><path d="M5,17 a6,6 0 0 1 12,0"/></g></g>
+    <text x="380" y="130" text-anchor="middle" font-size="15" font-weight="bold" fill="#be185d">SDK 客户端</text>
+    <text x="380" y="154" text-anchor="middle" font-size="11" fill="#9d174d">OpenWikiServerClient / Async</text>
+    <text x="380" y="174" text-anchor="middle" font-size="11" fill="#9d174d">transport · envelope · traceId</text>
+  </g>
+  <g>
+    <rect x="582" y="86" width="368" height="118" rx="12" fill="url(#gCyan)"/>
+    <g transform="translate(594,96)"><rect width="22" height="22" rx="6" fill="#ffffff" opacity="0.18"/><g stroke="#fff" stroke-width="1.6" fill="none"><rect x="3" y="4" width="16" height="14" rx="2"/><path d="M6,9 l3,2 l-3,2"/><line x1="11" y1="14" x2="15" y2="14"/></g></g>
+    <text x="766" y="130" text-anchor="middle" font-size="15" font-weight="bold" fill="#ffffff">CLI 命令行</text>
+    <text x="766" y="154" text-anchor="middle" font-size="11" fill="#ecfeff">serve http | grpc | mcp | worker</text>
+    <text x="766" y="174" text-anchor="middle" font-size="11" fill="#ecfeff">create / build / tree / search</text>
+  </g>
+  <g>
+    <rect x="968" y="86" width="368" height="118" rx="12" fill="url(#gCyan)"/>
+    <g transform="translate(980,96)"><rect width="22" height="22" rx="6" fill="#ffffff" opacity="0.18"/><g stroke="#fff" stroke-width="1.6" fill="none"><circle cx="11" cy="11" r="7"/><path d="M8,11 h6 M11,8 v6"/></g></g>
+    <text x="1152" y="130" text-anchor="middle" font-size="15" font-weight="bold" fill="#ffffff">MCP 客户端</text>
+    <text x="1152" y="154" text-anchor="middle" font-size="11" fill="#ecfeff">JSON-RPC over stdio</text>
+    <text x="1152" y="174" text-anchor="middle" font-size="11" fill="#ecfeff">调用 wiki_* tools</text>
+  </g>
+  <g>
+    <rect x="1354" y="86" width="368" height="118" rx="12" fill="url(#gCyan)"/>
+    <g transform="translate(1366,96)"><rect width="22" height="22" rx="6" fill="#ffffff" opacity="0.18"/><g stroke="#fff" stroke-width="1.6" fill="none"><circle cx="6" cy="6" r="2.4"/><circle cx="16" cy="16" r="2.4"/><path d="M8,7 L14,15"/></g></g>
+    <text x="1538" y="130" text-anchor="middle" font-size="15" font-weight="bold" fill="#ffffff">HTTP / gRPC 调用方</text>
+    <text x="1538" y="154" text-anchor="middle" font-size="11" fill="#ecfeff">open-ikc · 三方应用 · agent</text>
+    <text x="1538" y="174" text-anchor="middle" font-size="11" fill="#ecfeff">统一响应 envelope</text>
+  </g>
+
+  <!-- ================= BAND 2 协议接口层 ================= -->
+  <g transform="translate(90,287)">
+    <rect x="0" y="0" width="44" height="44" rx="11" fill="url(#gBlue)"/>
+    <g fill="#ffffff"><circle cx="22" cy="10" r="4"/><circle cx="10" cy="30" r="4"/><circle cx="34" cy="30" r="4"/><rect x="20" y="12" width="4" height="12"/><rect x="12" y="26" width="20" height="4" rx="2" opacity="0.6"/></g>
+  </g>
+  <text x="112" y="351" text-anchor="middle" font-size="14" font-weight="bold" fill="#1d4ed8">协议接口层</text>
+  <text x="112" y="369" text-anchor="middle" font-size="10.5" fill="#64748b">interfaces/</text>
+  <rect x="180" y="236" width="1560" height="150" rx="14" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.5"/>
+  <g>
+    <rect x="196" y="252" width="291" height="118" rx="12" fill="url(#gBlue)"/>
+    <g transform="translate(208,262)"><rect width="22" height="22" rx="6" fill="#ffffff" opacity="0.18"/><g stroke="#fff" stroke-width="1.6" fill="none"><path d="M4,8 h14 M4,14 h14"/><circle cx="8" cy="8" r="2" fill="#fff"/><circle cx="15" cy="14" r="2" fill="#fff"/></g></g>
+    <text x="342" y="296" text-anchor="middle" font-size="15" font-weight="bold" fill="#ffffff">HTTP · FastAPI</text>
+    <text x="342" y="318" text-anchor="middle" font-size="10.5" fill="#dbeafe">/api/v1/wiki/**</text>
+    <text x="342" y="336" text-anchor="middle" font-size="10.5" fill="#dbeafe">同步 / 异步</text>
+  </g>
+  <g>
+    <rect x="505" y="252" width="291" height="118" rx="12" fill="url(#gBlue)"/>
+    <g transform="translate(517,262)"><rect width="22" height="22" rx="6" fill="#ffffff" opacity="0.18"/><g stroke="#fff" stroke-width="1.6" fill="none"><rect x="4" y="6" width="14" height="10" rx="2"/><path d="M7,6 V3 M15,6 V3 M7,16 v3 M15,16 v3"/></g></g>
+    <text x="651" y="296" text-anchor="middle" font-size="15" font-weight="bold" fill="#ffffff">gRPC</text>
+    <text x="651" y="318" text-anchor="middle" font-size="10.5" fill="#dbeafe">proto/wiki/v1 契约</text>
+    <text x="651" y="336" text-anchor="middle" font-size="10.5" fill="#dbeafe">动态 descriptor</text>
+  </g>
+  <g>
+    <rect x="814" y="252" width="291" height="118" rx="12" fill="url(#gBlue)"/>
+    <g transform="translate(826,262)"><rect width="22" height="22" rx="6" fill="#ffffff" opacity="0.18"/><g stroke="#fff" stroke-width="1.6" fill="none"><circle cx="11" cy="11" r="7"/><path d="M11,7 v4 l3,2"/></g></g>
+    <text x="960" y="296" text-anchor="middle" font-size="15" font-weight="bold" fill="#ffffff">Celery Worker</text>
+    <text x="960" y="318" text-anchor="middle" font-size="10.5" fill="#dbeafe">build/merge/export</text>
+    <text x="960" y="336" text-anchor="middle" font-size="10.5" fill="#dbeafe">update/ingest</text>
+  </g>
+  <g>
+    <rect x="1123" y="252" width="291" height="118" rx="12" fill="url(#gBlue)"/>
+    <g transform="translate(1135,262)"><rect width="22" height="22" rx="6" fill="#ffffff" opacity="0.18"/><g stroke="#fff" stroke-width="1.6" fill="none"><path d="M8,5 l-4,6 l4,6 M14,5 l4,6 l-4,6"/></g></g>
+    <text x="1269" y="296" text-anchor="middle" font-size="15" font-weight="bold" fill="#ffffff">MCP Server</text>
+    <text x="1269" y="318" text-anchor="middle" font-size="10.5" fill="#dbeafe">stdio JSON-RPC</text>
+    <text x="1269" y="336" text-anchor="middle" font-size="10.5" fill="#dbeafe">tools 暴露</text>
+  </g>
+  <g>
+    <rect x="1432" y="252" width="291" height="118" rx="12" fill="url(#gBlue)"/>
+    <g transform="translate(1444,262)"><rect width="22" height="22" rx="6" fill="#ffffff" opacity="0.18"/><g stroke="#fff" stroke-width="1.6" fill="none"><circle cx="11" cy="11" r="7"/><path d="M8,11 l2,2 l4,-5"/></g></g>
+    <text x="1578" y="296" text-anchor="middle" font-size="15" font-weight="bold" fill="#ffffff">系统路由</text>
+    <text x="1578" y="318" text-anchor="middle" font-size="10.5" fill="#dbeafe">/health · /ready</text>
+    <text x="1578" y="336" text-anchor="middle" font-size="10.5" fill="#dbeafe">免业务鉴权</text>
+  </g>
+
+  <!-- ================= BAND 3 运行时公共组件 ================= -->
+  <g transform="translate(90,448)">
+    <rect x="0" y="0" width="44" height="44" rx="11" fill="url(#gSky)"/>
+    <g fill="#ffffff"><circle cx="22" cy="22" r="8"/><circle cx="22" cy="22" r="3" fill="url(#gSky)"/><g><rect x="20" y="6" width="4" height="6" rx="1"/><rect x="20" y="32" width="4" height="6" rx="1"/><rect x="6" y="20" width="6" height="4" rx="1"/><rect x="32" y="20" width="6" height="4" rx="1"/></g></g>
+  </g>
+  <text x="112" y="512" text-anchor="middle" font-size="14" font-weight="bold" fill="#0284c7">运行时组件</text>
+  <rect x="180" y="402" width="1560" height="140" rx="14" fill="#f0f9ff" stroke="#0ea5e9" stroke-width="1.5"/>
+  <g>
+    <rect x="196" y="418" width="368" height="108" rx="12" fill="url(#gSky)"/>
+    <g transform="translate(208,428)"><rect width="22" height="22" rx="6" fill="#ffffff" opacity="0.18"/><g stroke="#fff" stroke-width="1.6" fill="none"><circle cx="11" cy="11" r="3"/><path d="M11,3 v3 M11,16 v3 M3,11 h3 M16,11 h3"/></g></g>
+    <text x="380" y="458" text-anchor="middle" font-size="15" font-weight="bold" fill="#ffffff">runtime 单例</text>
+    <text x="380" y="480" text-anchor="middle" font-size="11" fill="#e0f2fe">get_store / get_service</text>
+    <text x="380" y="498" text-anchor="middle" font-size="11" fill="#e0f2fe">五面复用同一实例</text>
+  </g>
+  <g>
+    <rect x="582" y="418" width="368" height="108" rx="12" fill="url(#gSky)"/>
+    <g transform="translate(594,428)"><rect width="22" height="22" rx="6" fill="#ffffff" opacity="0.18"/><g stroke="#fff" stroke-width="1.6" fill="none"><rect x="4" y="4" width="14" height="14" rx="2"/><path d="M4,9 h14"/></g></g>
+    <text x="766" y="458" text-anchor="middle" font-size="15" font-weight="bold" fill="#ffffff">protocol 协议</text>
+    <text x="766" y="480" text-anchor="middle" font-size="11" fill="#e0f2fe">Envelope · headers · codes</text>
+    <text x="766" y="498" text-anchor="middle" font-size="11" fill="#e0f2fe">统一响应封装</text>
+  </g>
+  <g>
+    <rect x="968" y="418" width="368" height="108" rx="12" fill="url(#gSky)"/>
+    <g transform="translate(980,428)"><rect width="22" height="22" rx="6" fill="#ffffff" opacity="0.18"/><g stroke="#fff" stroke-width="1.6" fill="none"><path d="M6,4 h10 v14 h-10 z"/><path d="M9,8 h4 M9,12 h4"/></g></g>
+    <text x="1152" y="458" text-anchor="middle" font-size="15" font-weight="bold" fill="#ffffff">config · Settings</text>
+    <text x="1152" y="480" text-anchor="middle" font-size="11" fill="#e0f2fe">env &gt; engine.yaml</text>
+    <text x="1152" y="498" text-anchor="middle" font-size="11" fill="#e0f2fe">端口 / 队列 / 内核开关</text>
+  </g>
+  <g>
+    <rect x="1354" y="418" width="368" height="108" rx="12" fill="url(#gSky)"/>
+    <g transform="translate(1366,428)"><rect width="22" height="22" rx="6" fill="#ffffff" opacity="0.18"/><g stroke="#fff" stroke-width="1.6" fill="none"><path d="M5,15 l3,-8 l3,5 l3,-7 l3,10"/></g></g>
+    <text x="1538" y="458" text-anchor="middle" font-size="15" font-weight="bold" fill="#ffffff">errors · logging</text>
+    <text x="1538" y="480" text-anchor="middle" font-size="11" fill="#e0f2fe">错误码 / AppException</text>
+    <text x="1538" y="498" text-anchor="middle" font-size="11" fill="#e0f2fe">traceId 链路日志</text>
+  </g>
+
+  <!-- ================= BAND 4 应用服务层 ================= -->
+  <g transform="translate(90,609)">
+    <rect x="0" y="0" width="44" height="44" rx="11" fill="url(#gViolet)"/>
+    <g fill="#ffffff"><path d="M22,8 l12,6 l-12,6 l-12,-6 z"/><path d="M10,22 l12,6 l12,-6" fill="none" stroke="#fff" stroke-width="2.4" opacity="0.85"/><path d="M10,28 l12,6 l12,-6" fill="none" stroke="#fff" stroke-width="2.4" opacity="0.6"/></g>
+  </g>
+  <text x="112" y="673" text-anchor="middle" font-size="14" font-weight="bold" fill="#6d28d9">应用服务层</text>
+  <text x="112" y="691" text-anchor="middle" font-size="10.5" fill="#64748b">OpenWikiService</text>
+  <rect x="180" y="558" width="1560" height="150" rx="14" fill="#f5f3ff" stroke="#8b5cf6" stroke-width="1.5"/>
+  <g>
+    <rect x="196" y="574" width="291" height="118" rx="12" fill="url(#gViolet)"/>
+    <g transform="translate(208,584)"><rect width="22" height="22" rx="6" fill="#ffffff" opacity="0.18"/><g stroke="#fff" stroke-width="1.6" fill="none"><path d="M5,5 h9 l4,4 v8 h-13 z"/><path d="M14,5 v4 h4"/></g></g>
+    <text x="342" y="618" text-anchor="middle" font-size="14.5" font-weight="bold" fill="#ffffff">Wiki CRUD</text>
+    <text x="342" y="640" text-anchor="middle" font-size="10.5" fill="#ede9fe">create / get</text>
+    <text x="342" y="658" text-anchor="middle" font-size="10.5" fill="#ede9fe">list / delete</text>
+  </g>
+  <g>
+    <rect x="505" y="574" width="291" height="118" rx="12" fill="url(#gViolet)"/>
+    <g transform="translate(517,584)"><rect width="22" height="22" rx="6" fill="#ffffff" opacity="0.18"/><g stroke="#fff" stroke-width="1.6" fill="none"><path d="M4,11 a7,7 0 0 1 14,0 a7,7 0 0 1 -14,0"/><path d="M8,11 h6 M11,8 v6"/></g></g>
+    <text x="651" y="618" text-anchor="middle" font-size="14.5" font-weight="bold" fill="#ffffff">构建主流程</text>
+    <text x="651" y="640" text-anchor="middle" font-size="10.5" fill="#ede9fe">build_from_doc</text>
+    <text x="651" y="658" text-anchor="middle" font-size="10.5" fill="#ede9fe">同步 / 异步</text>
+  </g>
+  <g>
+    <rect x="814" y="574" width="291" height="118" rx="12" fill="url(#gViolet)"/>
+    <g transform="translate(826,584)"><rect width="22" height="22" rx="6" fill="#ffffff" opacity="0.18"/><g stroke="#fff" stroke-width="1.6" fill="none"><rect x="4" y="4" width="7" height="7" rx="1"/><rect x="11" y="4" width="7" height="7" rx="1"/><rect x="4" y="11" width="7" height="7" rx="1"/><rect x="11" y="11" width="7" height="7" rx="1"/></g></g>
+    <text x="960" y="618" text-anchor="middle" font-size="14.5" font-weight="bold" fill="#ffffff">页面管理</text>
+    <text x="960" y="640" text-anchor="middle" font-size="10.5" fill="#ede9fe">merge / deprecate</text>
+    <text x="960" y="658" text-anchor="middle" font-size="10.5" fill="#ede9fe">tree / page / search / stat</text>
+  </g>
+  <g>
+    <rect x="1123" y="574" width="291" height="118" rx="12" fill="url(#gViolet)"/>
+    <g transform="translate(1135,584)"><rect width="22" height="22" rx="6" fill="#ffffff" opacity="0.18"/><g stroke="#fff" stroke-width="1.6" fill="none"><path d="M11,4 v10 M7,10 l4,4 l4,-4"/><path d="M5,18 h12"/></g></g>
+    <text x="1269" y="618" text-anchor="middle" font-size="14.5" font-weight="bold" fill="#ffffff">导出</text>
+    <text x="1269" y="640" text-anchor="middle" font-size="10.5" fill="#ede9fe">export</text>
+    <text x="1269" y="658" text-anchor="middle" font-size="10.5" fill="#ede9fe">jsonl 格式</text>
+  </g>
+  <g>
+    <rect x="1432" y="574" width="291" height="118" rx="12" fill="url(#gViolet)"/>
+    <g transform="translate(1444,584)"><rect width="22" height="22" rx="6" fill="#ffffff" opacity="0.18"/><g stroke="#fff" stroke-width="1.6" fill="none"><rect x="4" y="5" width="14" height="12" rx="2"/><path d="M4,9 h14 M8,5 v-2 M14,5 v-2"/></g></g>
+    <text x="1578" y="618" text-anchor="middle" font-size="14.5" font-weight="bold" fill="#ffffff">作业 Jobs</text>
+    <text x="1578" y="640" text-anchor="middle" font-size="10.5" fill="#ede9fe">submit / run</text>
+    <text x="1578" y="658" text-anchor="middle" font-size="10.5" fill="#ede9fe">get / list（异步轮询）</text>
+  </g>
+
+  <!-- ================= BAND 5 领域 · 适配 · 持久 ================= -->
+  <g transform="translate(90,775)">
+    <rect x="0" y="0" width="44" height="44" rx="11" fill="url(#gIndigo)"/>
+    <g fill="#ffffff"><ellipse cx="22" cy="12" rx="12" ry="4"/><path d="M10,12 v18 a12,4 0 0 0 24,0 v-18" fill="none" stroke="#fff" stroke-width="2.4"/><path d="M10,21 a12,4 0 0 0 24,0" fill="none" stroke="#fff" stroke-width="2.4" opacity="0.7"/></g>
+  </g>
+  <text x="112" y="839" text-anchor="middle" font-size="13.5" font-weight="bold" fill="#3730a3">领域·持久</text>
+  <rect x="180" y="724" width="1560" height="150" rx="14" fill="#eef2ff" stroke="#4f46e5" stroke-width="1.5"/>
+  <g>
+    <rect x="196" y="740" width="368" height="118" rx="12" fill="url(#gIndigo)"/>
+    <g transform="translate(208,750)"><rect width="22" height="22" rx="6" fill="#ffffff" opacity="0.18"/><g stroke="#fff" stroke-width="1.6" fill="none"><circle cx="7" cy="7" r="3"/><circle cx="15" cy="15" r="3"/><path d="M7,10 v2 a3,3 0 0 0 3,3 h2"/></g></g>
+    <text x="380" y="784" text-anchor="middle" font-size="15" font-weight="bold" fill="#ffffff">domain 领域</text>
+    <text x="380" y="808" text-anchor="middle" font-size="11" fill="#e0e7ff">ids 稳定 ID · models · merge</text>
+    <text x="380" y="828" text-anchor="middle" font-size="11" fill="#e0e7ff">wiki_config 校验</text>
+  </g>
+  <g>
+    <rect x="582" y="740" width="368" height="118" rx="12" fill="url(#gIndigo)"/>
+    <g transform="translate(594,750)"><rect width="22" height="22" rx="6" fill="#ffffff" opacity="0.18"/><g stroke="#fff" stroke-width="1.6" fill="none"><rect x="4" y="4" width="14" height="14" rx="2"/><path d="M8,11 h6 M11,8 v6"/></g></g>
+    <text x="766" y="784" text-anchor="middle" font-size="15" font-weight="bold" fill="#ffffff">adapters/openwiki</text>
+    <text x="766" y="808" text-anchor="middle" font-size="11" fill="#e0e7ff">Node 内核子进程调用</text>
+    <text x="766" y="828" text-anchor="middle" font-size="11" fill="#e0e7ff">守卫式规则切页降级</text>
+  </g>
+  <g>
+    <rect x="968" y="740" width="368" height="118" rx="12" fill="url(#gIndigo)"/>
+    <g transform="translate(980,750)"><rect width="22" height="22" rx="6" fill="#ffffff" opacity="0.18"/><g stroke="#fff" stroke-width="1.6" fill="none"><path d="M11,4 v8 M8,8 l3,3 l3,-3"/><path d="M4,14 v3 h14 v-3"/></g></g>
+    <text x="1152" y="784" text-anchor="middle" font-size="15" font-weight="bold" fill="#ffffff">adapters/writeback</text>
+    <text x="1152" y="808" text-anchor="middle" font-size="11" fill="#e0e7ff">回写 open-ikc 主数据</text>
+    <text x="1152" y="828" text-anchor="middle" font-size="11" fill="#e0e7ff">page_payload 对齐</text>
+  </g>
+  <g>
+    <rect x="1354" y="740" width="368" height="118" rx="12" fill="url(#gIndigo)"/>
+    <g transform="translate(1366,750)"><rect width="22" height="22" rx="6" fill="#ffffff" opacity="0.18"/><g stroke="#fff" stroke-width="1.6" fill="none"><ellipse cx="11" cy="6" rx="7" ry="2.6"/><path d="M4,6 v10 a7,2.6 0 0 0 14,0 v-10"/></g></g>
+    <text x="1538" y="784" text-anchor="middle" font-size="15" font-weight="bold" fill="#ffffff">persistence 持久层</text>
+    <text x="1538" y="808" text-anchor="middle" font-size="11" fill="#e0e7ff">SqliteWikiStore</text>
+    <text x="1538" y="828" text-anchor="middle" font-size="11" fill="#e0e7ff">单连接 + 互斥锁</text>
+  </g>
+
+  <!-- ================= BAND 6 外部依赖 · 部署 ================= -->
+  <g transform="translate(90,928)">
+    <rect x="0" y="0" width="44" height="44" rx="11" fill="url(#gSlate)"/>
+    <g fill="#ffffff"><rect x="8" y="8" width="28" height="9" rx="2"/><rect x="8" y="21" width="28" height="9" rx="2" opacity="0.8"/><circle cx="13" cy="12.5" r="1.6" fill="url(#gSlate)"/><circle cx="13" cy="25.5" r="1.6" fill="url(#gSlate)"/></g>
+  </g>
+  <text x="112" y="992" text-anchor="middle" font-size="13.5" font-weight="bold" fill="#475569">外部·部署</text>
+  <rect x="180" y="890" width="1560" height="140" rx="14" fill="#f1f5f9" stroke="#64748b" stroke-width="1.5"/>
+  <g>
+    <rect x="196" y="906" width="368" height="108" rx="12" fill="url(#gSlate)"/>
+    <g transform="translate(208,916)"><rect width="22" height="22" rx="6" fill="#ffffff" opacity="0.18"/><g stroke="#fff" stroke-width="1.6" fill="none"><path d="M8,5 l-4,6 l4,6 M14,5 l4,6 l-4,6"/></g></g>
+    <text x="380" y="946" text-anchor="middle" font-size="15" font-weight="bold" fill="#ffffff">OpenWiki Node 内核</text>
+    <text x="380" y="968" text-anchor="middle" font-size="11" fill="#e2e8f0">子进程 · HOME 隔离</text>
+    <text x="380" y="986" text-anchor="middle" font-size="11" fill="#e2e8f0">多租户实例目录</text>
+  </g>
+  <g>
+    <rect x="582" y="906" width="368" height="108" rx="12" fill="url(#gSlate)"/>
+    <g transform="translate(594,916)"><rect width="22" height="22" rx="6" fill="#ffffff" opacity="0.18"/><g stroke="#fff" stroke-width="1.6" fill="none"><path d="M4,6 h7 l2,2 h7 v9 h-16 z"/></g></g>
+    <text x="766" y="946" text-anchor="middle" font-size="15" font-weight="bold" fill="#ffffff">文件系统</text>
+    <text x="766" y="968" text-anchor="middle" font-size="11" fill="#e2e8f0">sources/ · .openwiki/wiki</text>
+    <text x="766" y="986" text-anchor="middle" font-size="11" fill="#e2e8f0">OKF Markdown 产物</text>
+  </g>
+  <g>
+    <rect x="968" y="906" width="368" height="108" rx="12" fill="url(#gSlate)"/>
+    <g transform="translate(980,916)"><rect width="22" height="22" rx="6" fill="#ffffff" opacity="0.18"/><g stroke="#fff" stroke-width="1.6" fill="none"><ellipse cx="11" cy="6" rx="7" ry="2.6"/><path d="M4,6 v10 a7,2.6 0 0 0 14,0 v-10"/></g></g>
+    <text x="1152" y="946" text-anchor="middle" font-size="15" font-weight="bold" fill="#ffffff">SQLite</text>
+    <text x="1152" y="968" text-anchor="middle" font-size="11" fill="#e2e8f0">engine.db</text>
+    <text x="1152" y="986" text-anchor="middle" font-size="11" fill="#e2e8f0">元数据与页面存储</text>
+  </g>
+  <g>
+    <rect x="1354" y="906" width="368" height="108" rx="12" fill="url(#gSlate)"/>
+    <g transform="translate(1366,916)"><rect width="22" height="22" rx="6" fill="#ffffff" opacity="0.18"/><g stroke="#fff" stroke-width="1.6" fill="none"><rect x="3" y="5" width="16" height="5" rx="1.5"/><rect x="3" y="12" width="16" height="5" rx="1.5"/><circle cx="6" cy="7.5" r="1" fill="#fff"/><circle cx="6" cy="14.5" r="1" fill="#fff"/></g></g>
+    <text x="1538" y="946" text-anchor="middle" font-size="15" font-weight="bold" fill="#ffffff">Docker + HAProxy</text>
+    <text x="1538" y="968" text-anchor="middle" font-size="11" fill="#e2e8f0">单镜像 · 对外 8080/50052/8404</text>
+    <text x="1538" y="986" text-anchor="middle" font-size="11" fill="#e2e8f0">内部 uvicorn 18011</text>
+  </g>
+
+  <!-- ===== 右侧纵向组件条：openwiki-server-sdk（粉色虚线，同 ikc-video 风格）===== -->
+  <rect x="1775" y="70" width="150" height="638" rx="10" fill="#fdf2f8" stroke="#ec4899" stroke-width="1.5" stroke-dasharray="6 4"/>
+  <text x="1850" y="205" text-anchor="middle" font-size="13" font-weight="bold" fill="#be185d">ikc-sdk-lib</text>
+  <line x1="1850" y1="223" x2="1850" y2="223" stroke="#ec4899" stroke-width="1"/>
+  <text x="1850" y="249" text-anchor="middle" font-size="9" fill="#9d174d">错误码表 / 标准头</text>
+  <text x="1850" y="275" text-anchor="middle" font-size="9" fill="#9d174d">队列名 / Celery 工厂</text>
+  <text x="1850" y="301" text-anchor="middle" font-size="9" fill="#9d174d">公共协议封装</text>
+  <text x="1850" y="327" text-anchor="middle" font-size="9" fill="#9d174d">traceId 23位生成复用</text>
+  <text x="1850" y="353" text-anchor="middle" font-size="9" fill="#9d174d">统一响应壳解析</text>
+  <text x="1850" y="379" text-anchor="middle" font-size="9" fill="#9d174d">Bearer + 身份头注入</text>
+  <text x="1850" y="405" text-anchor="middle" font-size="9" fill="#9d174d">单一装配来源</text>
+  <line x1="1850" y1="423" x2="1850" y2="423" stroke="#ec4899" stroke-width="1"/>
+  <text x="1850" y="449" text-anchor="middle" font-size="9" font-weight="bold" fill="#be185d">版本强制契约</text>
+  <text x="1850" y="475" text-anchor="middle" font-size="9" fill="#9d174d">celery==5.6.3</text>
+  <text x="1850" y="501" text-anchor="middle" font-size="9" fill="#9d174d">kombu==5.6.2</text>
+  <text x="1850" y="527" text-anchor="middle" font-size="9" fill="#9d174d">redis==6.2.0</text>
+  <text x="1850" y="553" text-anchor="middle" font-size="9" fill="#9d174d">禁止放宽为 &gt;=</text>
+  <!-- SDK 条连接箭头（指向内容右缘 x=1740） -->
+  <line x1="1775" y1="145" x2="1740" y2="145" stroke="#ec4899" stroke-width="1.5" stroke-dasharray="4 4" marker-end="url(#arrowPink)"/>
+  <line x1="1775" y1="633" x2="1740" y2="633" stroke="#ec4899" stroke-width="1.5" stroke-dasharray="4 4" marker-end="url(#arrowPink)"/>
+
+  <!-- ===== 右侧纵向组件条：可观测与部署（绿色虚线，贯穿全六层）===== -->
+  <rect x="1955" y="70" width="200" height="960" rx="12" fill="#f0fdf4" stroke="#10b981" stroke-width="1.5" stroke-dasharray="6 4"/>
+  <text x="2055" y="100" text-anchor="middle" font-size="14" font-weight="bold" fill="#047857">可观测与部署</text>
+
+  <!-- 模块1: traceId 全链路 -->
+  <rect x="1972" y="118" width="166" height="128" rx="9" fill="url(#gGreen)"/>
+  <text x="2055" y="143" text-anchor="middle" font-size="11" font-weight="bold" fill="#ffffff">traceId 全链路</text>
+  <text x="2055" y="162" text-anchor="middle" font-size="9" fill="#d1fae5">X-Trace-Id 复用注入</text>
+  <text x="2055" y="178" text-anchor="middle" font-size="9" fill="#d1fae5">23位纯数字生成</text>
+  <text x="2055" y="194" text-anchor="middle" font-size="9" fill="#d1fae5">Celery payload 透传</text>
+  <text x="2055" y="210" text-anchor="middle" font-size="9" fill="#d1fae5">HTTP → 任务 → worker</text>
+  <text x="2055" y="226" text-anchor="middle" font-size="9" fill="#d1fae5">日志上下文自动携带</text>
+
+  <!-- 模块2: 日志投递 -->
+  <rect x="1972" y="264" width="166" height="114" rx="9" fill="url(#gGreen)"/>
+  <text x="2055" y="289" text-anchor="middle" font-size="11" font-weight="bold" fill="#ffffff">日志投递</text>
+  <text x="2055" y="308" text-anchor="middle" font-size="9" fill="#d1fae5">ikc-log-center 强制</text>
+  <text x="2055" y="324" text-anchor="middle" font-size="9" fill="#d1fae5">LOG_CENTER_ENABLE</text>
+  <text x="2055" y="340" text-anchor="middle" font-size="9" fill="#d1fae5">API + worker 全量投递</text>
+  <text x="2055" y="356" text-anchor="middle" font-size="9" fill="#d1fae5">日志禁止记录密钥</text>
+
+  <!-- 模块3: 端口与部署 -->
+  <rect x="1972" y="396" width="166" height="158" rx="9" fill="url(#gGreen)"/>
+  <text x="2055" y="421" text-anchor="middle" font-size="11" font-weight="bold" fill="#ffffff">端口与部署</text>
+  <text x="2055" y="440" text-anchor="middle" font-size="9" fill="#d1fae5">HAProxy :8080 HTTP</text>
+  <text x="2055" y="456" text-anchor="middle" font-size="9" fill="#d1fae5">HAProxy :50052 gRPC</text>
+  <text x="2055" y="472" text-anchor="middle" font-size="9" fill="#d1fae5">HAProxy stats :8404</text>
+  <text x="2055" y="488" text-anchor="middle" font-size="9" fill="#d1fae5">内部 uvicorn :18011</text>
+  <text x="2055" y="504" text-anchor="middle" font-size="9" fill="#d1fae5">引擎只监听回环</text>
+  <text x="2055" y="520" text-anchor="middle" font-size="9" fill="#d1fae5">单镜像 Py+Node+HA</text>
+  <text x="2055" y="540" text-anchor="middle" font-size="9" fill="#d1fae5">docker save/load 离线</text>
+
+  <!-- 模块4: 守卫式降级 -->
+  <rect x="1972" y="572" width="166" height="132" rx="9" fill="url(#gGreen)"/>
+  <text x="2055" y="597" text-anchor="middle" font-size="11" font-weight="bold" fill="#ffffff">守卫式降级</text>
+  <text x="2055" y="616" text-anchor="middle" font-size="9" fill="#d1fae5">openwiki 内核不可用</text>
+  <text x="2055" y="632" text-anchor="middle" font-size="9" fill="#d1fae5">LLM / 网络失败</text>
+  <text x="2055" y="648" text-anchor="middle" font-size="9" fill="#d1fae5">→ 自动切规则切页</text>
+  <text x="2055" y="664" text-anchor="middle" font-size="9" fill="#d1fae5">heading / section / page</text>
+  <text x="2055" y="684" text-anchor="middle" font-size="9" fill="#d1fae5">全链路离线可用</text>
+
+  <!-- 模块5: 配置纪律 -->
+  <rect x="1972" y="722" width="166" height="132" rx="9" fill="url(#gGreen)"/>
+  <text x="2055" y="747" text-anchor="middle" font-size="11" font-weight="bold" fill="#ffffff">配置纪律</text>
+  <text x="2055" y="766" text-anchor="middle" font-size="9" fill="#d1fae5">env > engine.yaml</text>
+  <text x="2055" y="782" text-anchor="middle" font-size="9" fill="#d1fae5">OPENWIKI_SERVER_*</text>
+  <text x="2055" y="798" text-anchor="middle" font-size="9" fill="#d1fae5">密钥仅环境变量注入</text>
+  <text x="2055" y="814" text-anchor="middle" font-size="9" fill="#d1fae5">DATA_DIR 多租隔离</text>
+  <text x="2055" y="834" text-anchor="middle" font-size="9" fill="#d1fae5">OPENWIKI=0 关闭内核</text>
+
+  <!-- 底部注释 -->
+  <text x="2055" y="882" text-anchor="middle" font-size="10" font-weight="bold" fill="#047857">贯穿全部六层</text>
+  <text x="2055" y="900" text-anchor="middle" font-size="9" fill="#059669">队列版本三条成组变更</text>
+  <text x="2055" y="916" text-anchor="middle" font-size="9" fill="#059669">禁止单独放宽约束</text>
+
+  <!-- 绿色虚线连接箭头（指向内容右缘） -->
+  <line x1="1955" y1="185" x2="1740" y2="185" stroke="#059669" stroke-width="1.2" stroke-dasharray="4 4" marker-end="url(#arrowGreen)"/>
+  <line x1="1955" y1="310" x2="1740" y2="310" stroke="#059669" stroke-width="1.2" stroke-dasharray="4 4" marker-end="url(#arrowGreen)"/>
+  <line x1="1955" y1="472" x2="1740" y2="472" stroke="#059669" stroke-width="1.2" stroke-dasharray="4 4" marker-end="url(#arrowGreen)"/>
+  <line x1="1955" y1="633" x2="1740" y2="633" stroke="#059669" stroke-width="1.2" stroke-dasharray="4 4" marker-end="url(#arrowGreen)"/>
+  <line x1="1955" y1="800" x2="1740" y2="800" stroke="#059669" stroke-width="1.2" stroke-dasharray="4 4" marker-end="url(#arrowGreen)"/>
+
+  <!-- 图例 / 脚注 -->
+  <g font-size="12.5" fill="#475569">
+    <text x="180" y="1058">五类服务面（HTTP / gRPC / Celery / MCP / CLI）共用 <tspan font-weight="bold" fill="#334155">OpenWikiService</tspan> 用例编排；自上而下依次委派，稳定 ID 与 open-ikc 完全兼容。</text>
+    <text x="180" y="1078">守卫式降级：OpenWiki 内核 / LLM / 网络不可用时，build_from_doc 自动切换为离线规则切页（heading / section / page），全链路可用。</text>
+  </g>
+</svg>
