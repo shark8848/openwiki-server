@@ -6,12 +6,12 @@ OPENWIKI_SERVER_CELERY_* 环境变量经 ikc_sdk.celery 解析，默认 redis://
 
 from __future__ import annotations
 
-from typing import Any, Callable
+from typing import Any
 
 from ikc_sdk.celery import CeleryFactory
 
+from ..celery_tasks import handlers
 from ..config import Settings
-from ..runtime import get_service
 
 _settings = Settings()
 
@@ -35,24 +35,6 @@ celery_app.conf.update(
 )
 
 
-def _run_job(job_id: str, run: Callable[[], dict[str, Any]]) -> dict[str, Any]:
-    """执行任务体并把**终态**回写引擎 job 表（HTTP async / W-07 轮询据此判定）。
-
-    异常必须落 `failed` + `error`：引擎只在成功时回写 job 的话，任务抛异常（如目标资源不存在）
-    会让作业永远停在 `pending`，调用方只能靠轮询超时猜失败。异常照旧向上抛，Celery 保持
-    标准的 FAILURE 语义。
-    """
-    try:
-        result = run()
-    except Exception as exc:
-        if job_id:
-            get_service().store.update_job(job_id, status="failed", error=str(exc))
-        raise
-    if job_id:
-        get_service().store.update_job(job_id, status="success", result=result)
-    return result
-
-
 @celery_app.task(name="openwiki_server.build")
 def build_task(
     wiki_id: str,
@@ -64,17 +46,14 @@ def build_task(
     job_id: str = "",
 ) -> dict[str, Any]:
     """按文档建页任务。"""
-    svc = get_service()
-    return _run_job(
-        job_id,
-        lambda: svc.build_from_doc(
-            wiki_id,
-            doc_id=doc_id,
-            title=title,
-            tags=tags or [],
-            markdown=markdown,
-            wiki_config=wiki_config,
-        ),
+    return handlers.build(
+        wiki_id,
+        doc_id=doc_id,
+        title=title,
+        tags=tags,
+        markdown=markdown,
+        wiki_config=wiki_config,
+        job_id=job_id,
     )
 
 
@@ -86,36 +65,31 @@ def merge_task(
     job_id: str = "",
 ) -> dict[str, Any]:
     """增量合并任务。"""
-    svc = get_service()
-    return _run_job(job_id, lambda: svc.merge_records(wiki_id, pages=pages or [], doc_id=doc_id))
+    return handlers.merge(wiki_id, pages=pages, doc_id=doc_id, job_id=job_id)
 
 
 @celery_app.task(name="openwiki_server.deprecate_doc")
 def deprecate_doc_task(wiki_id: str, doc_id: str, job_id: str = "") -> dict[str, Any]:
     """按 docId 增量废弃任务。"""
-    svc = get_service()
-    return _run_job(job_id, lambda: svc.deprecate_doc(wiki_id, doc_id=doc_id))
+    return handlers.deprecate_doc(wiki_id, doc_id=doc_id, job_id=job_id)
 
 
 @celery_app.task(name="openwiki_server.export")
 def export_task(wiki_id: str, format: str = "jsonl", job_id: str = "") -> dict[str, Any]:
     """导出任务。"""
-    svc = get_service()
-    return _run_job(job_id, lambda: svc.export(wiki_id, format=format))
+    return handlers.export(wiki_id, format=format, job_id=job_id)
 
 
 @celery_app.task(name="openwiki_server.update")
 def update_task(wiki_id: str, message: str = "", job_id: str = "") -> dict[str, Any]:
     """OpenWiki 全量刷新任务。"""
-    svc = get_service()
-    return _run_job(job_id, lambda: svc.update_wiki(wiki_id, message=message))
+    return handlers.update(wiki_id, message=message, job_id=job_id)
 
 
 @celery_app.task(name="openwiki_server.ingest")
 def ingest_task(wiki_id: str, connector: str, job_id: str = "") -> dict[str, Any]:
     """连接器摄取任务。"""
-    svc = get_service()
-    return _run_job(job_id, lambda: svc.ingest(wiki_id, connector=connector))
+    return handlers.ingest(wiki_id, connector=connector, job_id=job_id)
 
 
 def worker_main(argv: list[str] | None = None) -> None:

@@ -1,0 +1,46 @@
+# openwiki-server task package manifest for rag-celery-registrar.
+# The decorated tasks in openwiki_engine.interfaces.celery_app delegate to these
+# plain functions; the registrar registers them on its own Celery app.
+tasks:
+  - task_name: openwiki_server.build
+    module: openwiki_engine.celery_tasks.handlers
+    function: build
+    bind: false
+    queue: openwiki_server
+    kwargs:
+      max_retries: 0
+  - task_name: openwiki_server.merge
+    module: openwiki_engine.celery_tasks.handlers
+    function: merge
+    bind: false
+    queue: openwiki_server
+    kwargs:
+      max_retries: 0
+  - task_name: openwiki_server.deprecate_doc
+    module: openwiki_engine.celery_tasks.handlers
+    function: deprecate_doc
+    bind: false
+    queue: openwiki_server
+    kwargs:
+      max_retries: 0
+  - task_name: openwiki_server.export
+    module: openwiki_engine.celery_tasks.handlers
+    function: export
+    bind: false
+    queue: openwiki_server
+    kwargs:
+      max_retries: 0
+  - task_name: openwiki_server.update
+    module: openwiki_engine.celery_tasks.handlers
+    function: update
+    bind: false
+    queue: openwiki_server
+    kwargs:
+      max_retries: 0
+  - task_name: openwiki_server.ingest
+    module: openwiki_engine.celery_tasks.handlers
+    function: ingest
+    bind: false
+    queue: openwiki_server
+    kwargs:
+      max_retries: 0
