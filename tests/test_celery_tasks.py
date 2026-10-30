@@ -4,18 +4,12 @@ import importlib
 
 import yaml
 from celery import Task
+from ikc_sdk.core.queues import OPENWIKI_TASK_NAMES, QUEUE_OPENWIKI
 
 from openwiki_engine.celery_tasks import MANIFEST_PATH
 
 
-EXPECTED_TASKS = {
-    "openwiki_server.build",
-    "openwiki_server.merge",
-    "openwiki_server.deprecate_doc",
-    "openwiki_server.export",
-    "openwiki_server.update",
-    "openwiki_server.ingest",
-}
+EXPECTED_TASKS = set(OPENWIKI_TASK_NAMES)
 
 
 def test_registrar_manifest_matches_task_package_contract():
@@ -24,7 +18,7 @@ def test_registrar_manifest_matches_task_package_contract():
 
     assert {item["task_name"] for item in tasks} == EXPECTED_TASKS
     for item in tasks:
-        assert item["queue"] == "openwiki_server"
+        assert item["queue"] == QUEUE_OPENWIKI
         assert item["bind"] is False
         module = importlib.import_module(item["module"])
         fn = getattr(module, item["function"])

@@ -2,6 +2,13 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
+from ikc_sdk.core.headers import (
+    HEADER_TENANT_ID,
+    HEADER_USER_ID,
+    HEADER_USER_ROLES,
+    TRACE_HEADER_NAMES,
+)
+
 from ._version import __version__
 
 
@@ -25,18 +32,18 @@ def build_headers(
     headers: dict[str, str] = {
         "Accept": "application/json",
         "User-Agent": f"openwiki-server-sdk/{__version__}",
-        "X-Request-Id": trace_id,
-        "X-Trace-Id": trace_id,
+        TRACE_HEADER_NAMES[0]: trace_id,
+        TRACE_HEADER_NAMES[1]: trace_id,
     }
     if token:
         headers["Authorization"] = f"Bearer {token}"
     if identity:
         if identity.user_id:
-            headers["X-User-Id"] = identity.user_id
+            headers[HEADER_USER_ID] = identity.user_id
         if identity.tenant_id:
-            headers["X-Tenant-Id"] = identity.tenant_id
+            headers[HEADER_TENANT_ID] = identity.tenant_id
         if identity.roles:
-            headers["X-User-Roles"] = ",".join(identity.roles)
+            headers[HEADER_USER_ROLES] = ",".join(identity.roles)
     if extra_headers:
         headers.update(extra_headers)
     return headers

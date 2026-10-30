@@ -40,9 +40,8 @@ COPY openwiki_engine/ ./openwiki_engine/
 COPY proto/ ./proto/
 COPY docs/ ./docs/
 COPY config/ ./config/
-# 私有/本地固定 wheel（IKC Log Center SDK：远程日志投递，仅 log_center_sdk、不含服务端；
-# 由 scripts/build_docker.sh 预置，
-# 版本 pin 在 pyproject.toml 的 log-center extra）：先装本地 wheel 满足 == 精确 pin，
+# 私有/本地固定 wheel（ikc-sdk-lib：Wiki 共享契约；IKC Log Center SDK：远程日志投递；
+# 由 scripts/build_docker.sh 预置，版本 pin 在 pyproject.toml）：先装本地 wheel 满足 == 精确 pin，
 # 随后的 `.[server,log-center]` 不再向索引请求该包（离线构建口径，与两引擎/网关一致）
 COPY docker/wheels/ /tmp/wheels/
 RUN test "$(find /tmp/wheels -maxdepth 1 -name '*.whl' | wc -l)" -ge 1 \

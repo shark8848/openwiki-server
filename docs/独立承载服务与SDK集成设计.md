@@ -1,9 +1,10 @@
 # OpenWiki Server 独立承载服务与 SDK 集成设计（openwiki-server-sdk）
 
-> 版本：1.0.0（文档版本；SDK 包版本 0.1.0）
-> 状态：已发布
-> 发布形态：SDK 独立发布到 PyPI（`pip install openwiki-server-sdk`，v0.1.0，仅依赖 `httpx`），
-> 与主包 `openwiki-server`（v0.2.0+，不再内嵌 SDK）解耦。
+> 版本：1.1.0（文档版本；SDK 包版本 0.2.0）
+> 状态：0.2.0 源码已落地，待发布
+> 发布形态：SDK 独立发布到 PyPI（`pip install openwiki-server-sdk`，v0.2.0，依赖 `httpx` +
+> `ikc-sdk-lib==0.37.0`），
+> 与主包 `openwiki-server`（v0.3.5+，不再内嵌 SDK）解耦。
 > 适用范围：面向外部应用的集成客户端 SDK；openwiki-server 作为**独立承载服务**（独立进程/容器，
 > 对外暴露 HTTP 18011 / gRPC 50052）运行，应用侧通过本 SDK 快速集成 wiki 能力。
 > 参考 open-ikc 的 SDK 定义（`/home/open-ikc/sdk/python`，`open-ikc-sdk`）：
@@ -16,11 +17,14 @@ wiki 实例 CRUD、按文档建页（build/merge/deprecate/update/ingest）、�
 异步任务（jobs）。应用侧直接调 HTTP 需要自行处理统一响应壳、traceId、错误码映射、重试与超时，
 成本高且易错。本 SDK 的目标：
 
+主契约入口是 **SDK + Celery**：SDK 经 HTTP 传输面访问引擎，异步任务经 Celery；gRPC / MCP / CLI
+全部保留，并继续与 HTTP / Celery 共用 application 层和共享模型。
+
 1. 封装全部 wiki 能力为类型安全、可读的 Python 调用，屏蔽 HTTP 细节。
 2. 内置 23 位数字 traceId 生成/复用、Bearer 认证、身份头透传（X-User-Id / X-Tenant-Id / X-User-Roles）。
 3. 统一错误码 → 异常层级映射，业务失败与传输失败可区分捕获。
-4. 与服务端实现完全解耦：SDK 只依赖对外 HTTP 协议（`/api/v1/wiki/*` + `/openapi.json`），
-   不依赖 `openwiki_engine/` 任何内部代码。
+4. 与服务端实现完全解耦：SDK 只通过对外 HTTP 协议（`/api/v1/wiki/*` + `/openapi.json`）访问引擎，
+   不依赖 `openwiki_engine/` 任何内部代码；模型复用 `ikc-sdk-lib`，避免 DTO 漂移。
 5. 提供同步（`OpenWikiServerClient`）与异步（`AsyncOpenWikiServerClient`）双客户端，共享同一套模型。
 
 ## 2. 边界与冲突隔离
@@ -28,7 +32,7 @@ wiki 实例 CRUD、按文档建页（build/merge/deprecate/update/ingest）、�
 | 维度 | 约定 |
 | --- | --- |
 | 写范围 | 仅 `sdk/python/`、本文档与 README；**不修改** `openwiki_engine/`、`tests/` |
-| 依赖 | 仅第三方 `httpx`；不引入 fastapi / pydantic / typer，不读服务端内部模块 |
+| 依赖 | `httpx`（传输）+ `ikc-sdk-lib`（共享模型）；不引入 fastapi / typer，不读服务端内部模块 |
 | 命名 | 包名 `openwiki-server-sdk`，导入名 `openwiki_server_sdk`，与服务端包 `openwiki_engine` 区分 |
 | 耦合面 | 仅 HTTP 协议：路径 `/api/v1/wiki/*`、统一响应壳（`{traceId,errCode,errMsg,data}`）、
   错误码（`0 / 200001 / 200404 / 200409 / 200500`）、Header 约定（`X-Trace-Id`） |
@@ -40,11 +44,11 @@ wiki 实例 CRUD、按文档建页（build/merge/deprecate/update/ingest）、�
 
 ```
 sdk/python/
-  pyproject.toml          # 独立打包：openwiki-server-sdk，核心依赖 httpx；可选 dev(pytest)
+  pyproject.toml          # 独立打包：openwiki-server-sdk，依赖 httpx + ikc-sdk-lib；可选 dev(pytest)
   README.md               # SDK 使用说明（安装 / 快速开始 / 环境变量 / 联调冒烟）
   openwiki_server_sdk/
     __init__.py           # 导出 OpenWikiServerClient / AsyncOpenWikiServerClient / 异常 / 模型
-    _version.py           # SDK 版本号（0.1.0）
+    _version.py           # SDK 版本号（0.2.0）
     _bootstrap.py         # client_from_env / async_client_from_env：环境变量 -> 客户端
     client.py             # 主客户端 + wiki/jobs 域子客户端 + raw 逃生口 + fetch_openapi
     async_client.py       # 异步客户端（httpx.AsyncClient），领域方法同同步客户端
@@ -52,11 +56,10 @@ sdk/python/
     transport_async.py    # 异步 HTTP 传输：与同步共享超时/重试/解析语义
     envelope.py           # 统一响应壳解析（errCode/errMsg/data/traceId，成功码 "0"）
     errors.py             # 异常层级 + 错误码映射表（200001/200404/200409/200500）
-    trace.py              # 23 位数字 traceId 生成/复用
-    headers.py            # 认证头 + 身份头构建（CallerIdentity）
+    trace.py              # 复用 ikc_sdk.core.trace 的 23 位 traceId
+    headers.py            # 认证头 + 身份头构建（头名复用 ikc_sdk.core.headers）
     models/
-      wiki.py             # wiki 数据模型（WikiMeta/WikiTreeData/WikiPageData/WikiSearchData/
-                          #   WikiStat/WikiExport/BuildResult/WikiJob/...）
+      wiki.py             # 兼容别名层：旧类名 → ikc_sdk.core.models.wiki_engine
   examples/
     quickstart.py         # 同步全链路冒烟：创建 -> 真实文档建页 -> 查询/检索/导出 -> 异步 job -> 清理
     async_quickstart.py   # 异步客户端示例
@@ -68,8 +71,9 @@ sdk/python/
 - SDK 方法按领域子客户端组织：`client.wikis.create/list/get/delete/tree/page/search/stat/export/
   build/merge/deprecate_doc/update/ingest`、`client.jobs.run/get/list`；方法名蛇形，
   请求参数与响应字段**沿用服务端 API 的 camelCase**（`kbId`、`wikiId`、`docId`、`pageId`…），与接口 1:1 对应。
-- 数据模型用 `dataclass` + `from_dict()` 构造；未知字段收进 `extra: dict` 透传，不阻断解析。
-- 每个模型带 `to_dict()`，方便日志与二次加工。
+- 数据模型由 `ikc-sdk-lib` 的 Pydantic 契约定义；本 SDK 保留 `from_dict()` / `to_dict()` / `extra`
+  兼容方法，旧调用方无需改代码。未知字段经 `extra="allow"` 透传，不阻断解析。
+- gRPC / MCP / CLI 保留为兼容与工具入口；它们与 HTTP / Celery 共用 application 层和同一组共享模型。
 
 ## 4. 核心对象模型
 
@@ -97,6 +101,7 @@ client = OpenWikiServerClient(
 `Envelope` 为统一壳：`err_code / err_msg / data / trace_id / ok`（`err_code == "0"`）。
 领域方法返回强类型模型（`WikiMeta` / `WikiTreeData` / `WikiPageData` / `WikiSearchData` /
 `WikiStat` / `WikiExport` / `BuildResult` / `WikiJob`）；`raw()` 逃生口返回原始 `Envelope`。
+规范模型定义在 `ikc_sdk.core.models.wiki_engine`，SDK 中的旧类名是兼容别名。
 
 ### 4.3 异常层级
 
@@ -172,8 +177,8 @@ python sdk/python/examples/async_quickstart.py  # 异步客户端
 ## 9. 自测
 
 ```bash
-cd sdk/python && PYTHONPATH=. python -m pytest tests -q
+PYTHONPATH=/home/sharkyai/ikc-sdk-lib/src:sdk/python .venv/bin/python -m pytest sdk/python/tests -q
 ```
 
-> 测试基于 `httpx.MockTransport`，无需起真实服务；36 例覆盖
+> 测试基于 `httpx.MockTransport`，无需起真实服务；37 例覆盖
 > envelope/错误映射/traceId/模型解析/领域方法/请求头/环境变量引导/异步客户端。

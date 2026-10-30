@@ -11,6 +11,7 @@ from typing import Any
 from fastapi import FastAPI, Query, Request
 from fastapi.responses import JSONResponse
 
+from .. import __version__
 from ..config import Settings
 from ..errors import OpenWikiError
 from ..logging_setup import configure_logging, set_trace_id
@@ -57,7 +58,7 @@ def create_app(service: Any | None = None) -> FastAPI:
     settings = Settings()
     configure_logging(level=settings.log_level, log_center=settings.log_center)
     svc = service or get_service()
-    app = FastAPI(title="OpenWiki Server", version="0.3.4")
+    app = FastAPI(title="OpenWiki Server", version=__version__)
 
     access_logger = logging.getLogger("openwiki_engine.access")
 
@@ -192,6 +193,7 @@ def create_app(service: Any | None = None) -> FastAPI:
                 title=str(payload.get("title") or ""),
                 tags=payload.get("tags") or [],
                 markdown=str(payload.get("markdown") or ""),
+                markdown_file_id=str(payload.get("markdownFileId") or ""),
                 wiki_config=payload.get("wikiConfig"),
             ),
         )

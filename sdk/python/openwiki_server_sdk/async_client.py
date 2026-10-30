@@ -197,6 +197,7 @@ class AsyncWikiClient:
         title: str = "",
         tags: list[str] | None = None,
         markdown: str = "",
+        markdownFileId: str = "",
         wikiConfig: dict[str, Any] | None = None,
         async_: bool = False,
     ) -> BuildResult | WikiJob:
@@ -209,6 +210,8 @@ class AsyncWikiClient:
             body["tags"] = list(tags)
         if markdown:
             body["markdown"] = markdown
+        if markdownFileId:
+            body["markdownFileId"] = markdownFileId
         if wikiConfig:
             body["wikiConfig"] = dict(wikiConfig)
         if async_:

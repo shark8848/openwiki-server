@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import json
 
 import httpx
 
@@ -88,3 +89,30 @@ def test_async_context_manager():
             return envelope.ok
 
     assert run(scenario()) is True
+
+
+def test_async_wiki_build_sends_markdown_file_id():
+    bodies: list[dict] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        bodies.append(json.loads(request.read().decode()))
+        return httpx.Response(
+            200,
+            json={
+                "traceId": "1",
+                "errCode": "0",
+                "errMsg": "",
+                "data": {"wikiId": "w1", "kbId": "kb1", "docId": "d1", "mode": "rule"},
+            },
+        )
+
+    client = make_client(httpx.MockTransport(handler))
+    file_id = "7ad9d5f0-9d89-4f13-a8e5-0a8c1f6d3f59"
+
+    async def scenario():
+        return await client.wikis.build("w1", docId="d1", markdownFileId=file_id)
+
+    assert run(scenario()).mode == "rule"
+    assert bodies[0]["markdownFileId"] == file_id
+    assert "markdown" not in bodies[0]
+    client.close()

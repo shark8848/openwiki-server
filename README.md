@@ -1,7 +1,8 @@
 # OpenWiki Server
 
 把 LangChain **OpenWiki**（`langchain-ai/openwiki`，Markdown wiki 内核）封装为独立对外服务的 Wiki 引擎，
-供 `/home/open-ikc` 的 Wiki 库能力消费；对外提供 **HTTP / gRPC / Celery / MCP / CLI** 五类接口。
+供 `/home/open-ikc` 的 Wiki 库能力消费。对外接口保留 **HTTP / gRPC / Celery / MCP / CLI**；
+其中 **SDK + Celery 是主契约入口**，HTTP 是 SDK 的传输面，gRPC / MCP / CLI 继续作为兼容与工具入口。
 
 <p align="center">
   <a href="https://pypi.org/project/openwiki-server/"><img src="https://img.shields.io/pypi/v/openwiki-server" alt="PyPI" /></a>
@@ -16,6 +17,7 @@
 - 配置样例：`config/engine.example.yaml`（全部可用环境变量覆盖）
 - 命令行测试与调用指南：`docs/命令行测试与调用指南.md`（五类接口全部命令，已用仓库真实文档实测）
 - 独立承载服务与 SDK 集成设计：`docs/独立承载服务与SDK集成设计.md`（应用侧快速集成）
+- 共享契约来源：`ikc-sdk-lib 0.37.0`（`ikc_sdk.core`：Wiki 模型、`wikiConfig`、合并规则、回写项、Celery 载荷与任务名）
 
 ## 安装（PyPI）
 
@@ -23,13 +25,13 @@
 pip install openwiki-server                        # 引擎 + 独立承载服务（HTTP/gRPC/Celery/MCP/CLI）
 pip install openwiki-server[server]                # + 承载服务依赖
 pip install openwiki-server[all]                   # 全部依赖
-pip install openwiki-server-sdk                    # 仅应用集成 SDK（httpx，应用侧集成）
+pip install openwiki-server-sdk                    # 应用集成 SDK（httpx + ikc-sdk-lib）
 ```
 
 - 队列依赖（强制契约）：`celery[redis]==5.6.3` / `kombu==5.6.2` / `redis==6.2.0`（权威 `/home/sharkyai/依赖版本强制契约.md`；三条成组变更，禁止放宽为 `>=`）。
 
 引擎与独立承载服务发布为 `openwiki-server`，应用集成 SDK 独立发布为
-`openwiki-server-sdk`（仅依赖 `httpx`）。SDK 快速开始见
+`openwiki-server-sdk`（依赖 `httpx` 作为传输层，模型来自 `ikc-sdk-lib`）。SDK 快速开始见
 [`sdk/python/README.md`](sdk/python/README.md)。
 
 发布到 PyPI：
@@ -55,6 +57,7 @@ cp config/pypi.env.example config/pypi.env   # 填入 OPENWIKI_PYPI_TOKEN
 # 依赖：本仓自带 venv（**不要**复用别的仓库的 venv——对方解释器可能缺 redis-py，
 # 会让 HTTP/worker 的 celery 投递静默失败，作业只登记不投递、永远停在 pending）
 python3 -m venv .venv
+.venv/bin/python -m pip install -e /home/sharkyai/ikc-sdk-lib   # 共享契约 0.37.0（发布前用本地源码）
 .venv/bin/python -m pip install -e '.[server,dev]'      # 含 HTTP/worker 全部依赖 + 队列依赖组（见「安装」小节的强制契约三条）
 
 # 启动 HTTP 服务（默认 18011）
@@ -125,11 +128,14 @@ bash scripts/docker_smoke.sh
 
 ## 五类接口
 
+主契约入口是 **SDK + Celery**：同步/异步 SDK 经 HTTP 访问引擎，异步任务经 Celery 投递；
+两者与 gRPC / MCP / CLI 共用 `ikc_sdk.core` 的模型与任务名，协议面只做适配。五类入口全部保留。
+
 | 协议面 | 入口 | 说明 |
 | --- | --- | --- |
 | HTTP | `openwiki-server serve http` | FastAPI，`/api/v1/wiki/*`，envelope 对齐 open-ikc |
 | gRPC | `openwiki-server serve grpc` | `wiki.v1.WikiService`，动态 descriptor 实现 |
-| Celery | `openwiki-server serve worker` | 任务 `openwiki_server.build / merge / deprecate_doc / export / update / ingest` |
+| Celery（主入口） | `openwiki-server serve worker` | 六任务 `build / merge / deprecate_doc / export / update / ingest`；名称、队列与载荷模型见 `ikc_sdk.core.queues` / `wiki_task` |
 | MCP | `openwiki-server serve mcp` | stdio JSON-RPC，`initialize / tools/list / tools/call` |
 | CLI | `openwiki-server ...` | typer，退出码 0/1/6 约定同 open-ikc `ikc` |
 
@@ -159,11 +165,12 @@ with OpenWikiServerClient(base_url="http://127.0.0.1:18011") as client:
 
 - 领域方法：`client.wikis.create/list/get/delete/tree/page/search/stat/export/
   build/merge/deprecate_doc/update/ingest` 与 `client.jobs.run/get/list`；
-  同步 `OpenWikiServerClient` / 异步 `AsyncOpenWikiServerClient` 共享同一套模型。
+  同步 `OpenWikiServerClient` / 异步 `AsyncOpenWikiServerClient` 共享同一套模型；模型直接复用
+  `ikc-sdk-lib`，SDK 仅保留 HTTP 传输、异常映射与旧类名兼容。
 - 环境变量引导：`OPENWIKI_SERVER_BASE_URL`（默认 `http://127.0.0.1:18011`）/
   `OPENWIKI_SERVER_TOKEN` / `OPENWIKI_SERVER_USER_ID` / `OPENWIKI_SERVER_TENANT_ID` /
   `OPENWIKI_SERVER_ROLES`，经 `client_from_env()` 构造。
-- 自测与冒烟：`cd sdk/python && PYTHONPATH=. python -m pytest tests -q`（36 例 MockTransport）；
+- 自测与冒烟：`PYTHONPATH=/home/sharkyai/ikc-sdk-lib/src:sdk/python .venv/bin/python -m pytest sdk/python/tests -q`（37 例 MockTransport）；
   真实联调 `python sdk/python/examples/quickstart.py`。
 - 完整设计（包结构 / 异常层级 / 请求链路 / API 对照表 / 独立承载部署）：见
   `docs/独立承载服务与SDK集成设计.md`；SDK 使用说明见 `sdk/python/README.md`。
@@ -171,7 +178,7 @@ with OpenWikiServerClient(base_url="http://127.0.0.1:18011") as client:
 ## 环境变量
 
 `OPENWIKI_SERVER_DATA_DIR` / `_DB_PATH` / `_HTTP_HOST` / `_HTTP_PORT`（18011）/
-`_GRPC_HOST` / `_GRPC_PORT`（50052）/ `_CELERY_BROKER` / `_CELERY_BACKEND` /
+`_GRPC_HOST` / `_GRPC_PORT`（50052）/ `_CELERY_BROKER` / `_CELERY_BACKEND` / `_CELERY_QUEUE`（`openwiki_server`）/
 `_OPENWIKI_BIN` / `_OPENWIKI`（0 关闭内核）/ `_PROVIDER` / `_MODEL_ID`
 （默认 `deepseek-v4-flash`，与本地 LLM 网关可用模型对齐，可用环境变量覆盖）/
 `_UPDATE_TIMEOUT` / `_LOG_LEVEL`；Docker 额外使用 `HAPROXY_STATS_USER` /

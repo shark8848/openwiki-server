@@ -110,6 +110,7 @@ def _build_wiki(service, p: dict[str, Any]) -> dict[str, Any]:
         title=str(p.get("title") or ""),
         tags=p.get("tags") or [],
         markdown=str(p.get("markdown") or ""),
+        markdown_file_id=str(p.get("markdownFileId") or ""),
         wiki_config=p.get("wikiConfig"),
     )
 

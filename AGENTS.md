@@ -1,5 +1,14 @@
 # AGENTS.md
 
+## Wiki 共享契约边界（2026-10-30，0.3.5 / SDK 0.2.0）
+
+- 跨仓单一来源：`ikc-sdk-lib 0.37.0` 的 `ikc_sdk.core` 定义 Wiki 稳定 ID、`wikiConfig`、页面合并规则、
+  `WikiEngine*` 引擎 DTO、core `WikiPageWriteItem`、六个 Celery 任务名/队列/载荷。本仓禁止复制这些字段表或枚举。
+- 本仓保留：`OpenWikiService` 用例编排、SQLite 持久化、OpenWiki CLI 子进程适配、OKF/规则切页、
+  core HTTP 回写实现、Celery handler/worker 装配，以及 HTTP / gRPC / MCP / CLI 协议实现。
+- 对外入口：**SDK + Celery 为主契约入口**，HTTP 是 SDK 传输面；gRPC / MCP / CLI 保留，不得删除或标废弃。
+- 响应壳例外：openwiki-server 成功码为 `"0"`，与平台统一壳 `"000000"` 不同；未经评审不得混用。
+
 ## GitHub 令牌与看板同步契约（跨仓共享，2026-09-15）
 
 - 仓库 `origin`：`git@github.com:shark8848/openwiki-server.git`（direct-push `main`，无 PR）。

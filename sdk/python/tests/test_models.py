@@ -1,14 +1,23 @@
 from __future__ import annotations
 
+from ikc_sdk.core.models.wiki import WikiPageView
+from ikc_sdk.core.models.wiki_engine import WikiEngineMetaView
+
 from openwiki_server_sdk.models.wiki import (
     BuildResult,
     WikiJob,
     WikiMeta,
+    WikiPageDetail,
     WikiPageData,
     WikiSearchData,
     WikiStat,
     WikiTreeData,
 )
+
+
+def test_legacy_model_names_alias_shared_contract():
+    assert WikiMeta is WikiEngineMetaView
+    assert WikiPageDetail is WikiPageView
 
 
 def test_wiki_meta_roundtrip():

@@ -4,11 +4,11 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "openwiki-server-sdk"
-version = "0.1.0"
+version = "0.2.0"
 description = "OpenWiki Server 独立承载服务应用集成 SDK（wiki 实例 / 建页加工 / 检索 / 导出 / 异步任务）"
 readme = "README.md"
 requires-python = ">=3.12"
-dependencies = ["httpx>=0.27,<1.0"]
+dependencies = ["httpx>=0.27,<1.0", "ikc-sdk-lib==0.37.0"]
 
 [project.optional-dependencies]
 dev = ["pytest>=8.0"]

@@ -31,6 +31,7 @@ def build(
     title: str = "",
     tags: list[str] | None = None,
     markdown: str = "",
+    markdown_file_id: str = "",
     wiki_config: dict[str, Any] | None = None,
     job_id: str = "",
 ) -> dict[str, Any]:
@@ -44,6 +45,7 @@ def build(
             title=title,
             tags=tags or [],
             markdown=markdown,
+            markdown_file_id=markdown_file_id,
             wiki_config=wiki_config,
         ),
     )

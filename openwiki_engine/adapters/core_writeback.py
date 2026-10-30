@@ -27,6 +27,8 @@ import urllib.request
 from pathlib import Path
 from typing import Any
 
+from ikc_sdk.core.models.wiki_engine import WikiPageWriteItem
+
 logger = logging.getLogger(__name__)
 
 def _resolve_version(dist: str) -> str:
@@ -54,22 +56,8 @@ ENGINE_VERSION = _resolve_version("openwiki-server")
 
 ENGINE_NAME = "openwiki-server"
 
-# 回落 core 契约字段（extra=forbid）：多余键会被 core 拒绝（100001），此处只投递契约字段
-_PAGE_FIELDS = (
-    "title",
-    "stableKey",
-    "level",
-    "parentPageId",
-    "parentStableKey",
-    "unitId",
-    "docId",
-    "tags",
-    "fields",
-    "links",
-    "sourceDocs",
-    "markdown",
-    "versionId",
-)
+# core 契约字段（extra=forbid）；模型在 ikc-sdk-lib 单源维护。
+_PAGE_FIELDS = tuple(WikiPageWriteItem.model_fields)
 
 
 def _env(key: str, default: str = "") -> str:
@@ -93,9 +81,7 @@ def page_payload(record: dict[str, Any]) -> dict[str, Any]:
     `parentPageId` 直接透传（本引擎已按 `ikc_sdk.core.wiki_ids` 派生同一稳定 ID），
     避免 core 侧按 parentStableKey 二次派生——两者对同一父页必须等价。
     """
-    payload = {key: record[key] for key in _PAGE_FIELDS if key in record}
-    payload["links"] = [dict(item) for item in (record.get("links") or [])]
-    return payload
+    return WikiPageWriteItem.from_record(record).to_payload()
 
 
 def _post(path: str, payload: dict[str, Any], timeout: float) -> dict[str, Any]:

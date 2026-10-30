@@ -5,6 +5,8 @@ import shutil
 from dataclasses import dataclass, field
 from pathlib import Path
 
+from ikc_sdk.core.queues import QUEUE_OPENWIKI
+
 
 def _env(key: str, default: str) -> str:
     return os.environ.get(key, default)
@@ -47,7 +49,7 @@ class Settings:
         default_factory=lambda: _env("OPENWIKI_SERVER_CELERY_BACKEND", "redis://localhost:6379/0")
     )
     celery_queue: str = field(
-        default_factory=lambda: _env("OPENWIKI_SERVER_CELERY_QUEUE", "openwiki_server")
+        default_factory=lambda: _env("OPENWIKI_SERVER_CELERY_QUEUE", QUEUE_OPENWIKI)
     )
     mcp_transport: str = field(default_factory=lambda: _env("OPENWIKI_SERVER_MCP_TRANSPORT", "stdio"))
     log_level: str = field(default_factory=lambda: _env("OPENWIKI_SERVER_LOG_LEVEL", "INFO"))
@@ -64,6 +66,24 @@ class Settings:
     )
     openwiki_update_timeout: int = field(
         default_factory=lambda: int(_env("OPENWIKI_SERVER_UPDATE_TIMEOUT", "600"))
+    )
+    pyuploadx_base_url: str = field(
+        default_factory=lambda: _env("PYUPLOADX_BASE_URL", "http://127.0.0.1:8000")
+    )
+    pyuploadx_api_key: str = field(
+        default_factory=lambda: _env("PYUPLOADX_API_KEY", "dev-key")
+    )
+    pyuploadx_bearer_token: str = field(
+        default_factory=lambda: _env("PYUPLOADX_BEARER_TOKEN", "")
+    )
+    pyuploadx_state_dir: str = field(
+        default_factory=lambda: _env("PYUPLOADX_STATE_DIR", "/tmp/pyuploadx-state-openwiki")
+    )
+    pyuploadx_timeout: float = field(
+        default_factory=lambda: float(_env("PYUPLOADX_TIMEOUT", "30"))
+    )
+    wiki_source_max_bytes: int = field(
+        default_factory=lambda: int(_env("OPENWIKI_SERVER_SOURCE_MAX_BYTES", str(20 * 1024 * 1024)))
     )
     log_center_enabled: bool = field(
         default_factory=lambda: _env_bool("OPENWIKI_SERVER_LOG_CENTER_ENABLED", False)

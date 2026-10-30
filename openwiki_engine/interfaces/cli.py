@@ -208,6 +208,10 @@ def build(
     title: str = typer.Option("", "--title"),
     tags: str = typer.Option("", "--tags", help="逗号分隔的标签"),
     markdown: str = typer.Option("", "--markdown"),
+    file_id: str = typer.Option(
+        "", "--markdown-file-id", "--file-id",
+        help="PyUploadX file_id（与 --markdown 二选一）",
+    ),
     config_json: str = typer.Option("", "--config", help="任务级 wikiConfig JSON"),
 ) -> None:
     """按文档建页。"""
@@ -219,6 +223,7 @@ def build(
                 title=title,
                 tags=[x.strip() for x in tags.split(",") if x.strip()] if tags else [],
                 markdown=markdown,
+                markdown_file_id=file_id,
                 wiki_config=json.loads(config_json) if config_json else None,
             )
         )

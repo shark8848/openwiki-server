@@ -215,6 +215,34 @@ def test_parse_okf_pages(tmp_path):
     assert "正文" in page["markdown"]
 
 
+def test_build_from_doc_accepts_pyuploadx_file_id(svc, monkeypatch):
+    calls: list[tuple[str, str]] = []
+
+    def fake_download(file_id, settings):
+        calls.append((file_id, settings.data_dir))
+        return "# 文件标题\n\n## 小节\n\n来自文件。"
+
+    monkeypatch.setattr("openwiki_engine.application.service.download_markdown", fake_download)
+    wid = _create(svc, config={"granularity": "heading"})["wikiId"]
+    file_id = "7ad9d5f0-9d89-4f13-a8e5-0a8c1f6d3f59"
+
+    result = svc.build_from_doc(wid, doc_id="doc-file", markdown_file_id=file_id)
+
+    assert calls and calls[0][0] == file_id
+    assert result["total"] == 2
+    assert any("来自文件" in page["markdown"] for page in result["pages"])
+
+
+@pytest.mark.parametrize(
+    "kwargs",
+    [{}, {"markdown": "# 正文", "markdown_file_id": "file-1"}],
+)
+def test_build_from_doc_requires_exactly_one_markdown_source(svc, kwargs):
+    wid = _create(svc)["wikiId"]
+    with pytest.raises(InvalidParamsError):
+        svc.build_from_doc(wid, doc_id="doc-1", **kwargs)
+
+
 # ---------- jobs ----------
 
 
@@ -270,6 +298,33 @@ def test_submit_job_keeps_pending_when_broker_down(svc, monkeypatch):
     assert result["status"] == "success"
 
 
+def test_submit_and_run_job_preserve_markdown_file_id(svc, monkeypatch):
+    from openwiki_engine.interfaces import celery_app as celery_mod
+
+    sent: list[tuple[str, dict]] = []
+    monkeypatch.setattr(
+        celery_mod.celery_app,
+        "send_task",
+        lambda name, **kwargs: sent.append((name, kwargs)),
+    )
+    monkeypatch.setattr(
+        "openwiki_engine.application.service.download_markdown",
+        lambda file_id, settings: "# 任务文件\n\n正文。",
+    )
+    wid = _create(svc)["wikiId"]
+    file_id = "7ad9d5f0-9d89-4f13-a8e5-0a8c1f6d3f59"
+
+    job = svc.submit_job(
+        "build", wid, {"docId": "doc-job", "markdownFileId": file_id}
+    )
+    assert sent[0][1]["kwargs"]["markdown_file_id"] == file_id
+    assert "markdown" not in sent[0][1]["kwargs"]
+
+    result = svc.run_job(job["jobId"])
+    assert result["status"] == "success"
+    assert result["result"]["total"] == 1
+
+
 # ---------- HTTP ----------
 
 
@@ -322,6 +377,31 @@ def test_http_app(svc):
     health_route = _route(app, "/health", "GET")
     resp = health_route.endpoint()
     assert _payload(resp)["status"] == "ok"
+
+
+def test_http_build_accepts_markdown_file_id(svc, monkeypatch):
+    from openwiki_engine.interfaces.http_app import create_app
+
+    calls: list[str] = []
+    monkeypatch.setattr(
+        "openwiki_engine.application.service.download_markdown",
+        lambda file_id, settings: calls.append(file_id) or "# HTTP 文件\n\n正文。",
+    )
+    app = create_app(svc)
+
+    class _Request:
+        headers: dict[str, str] = {}
+
+    create_route = _route(app, "/api/v1/wiki/wikis", "POST")
+    created = create_route.endpoint(_Request(), {"name": "HTTP File", "kbId": "kb_http_file"})
+    wid = json.loads(created.body)["data"]["wikiId"]
+    file_id = "7ad9d5f0-9d89-4f13-a8e5-0a8c1f6d3f59"
+
+    build_route = _route(app, "/api/v1/wiki/wikis/{wiki_id}/build", "POST")
+    built = build_route.endpoint(_Request(), wid, {"docId": "d-file", "markdownFileId": file_id})
+
+    assert json.loads(built.body)["errCode"] == "0"
+    assert calls == [file_id]
 
 
 # ---------- CLI ----------
@@ -438,6 +518,38 @@ def test_celery_tasks(tmp_path):
         result = build_task.run(wid, doc_id="d1", title="任务页", markdown="正文。", job_id=job["jobId"])
         assert result["total"] == 1
         assert rt_svc.get_job(job["jobId"])["status"] == "success"
+    finally:
+        os.environ.pop("OPENWIKI_SERVER_OPENWIKI", None)
+        runtime.reset_runtime()
+
+
+def test_celery_build_accepts_markdown_file_id(tmp_path, monkeypatch):
+    import os
+
+    from openwiki_engine import runtime
+    from openwiki_engine.interfaces.celery_app import build_task
+
+    calls: list[str] = []
+    monkeypatch.setattr(
+        "openwiki_engine.application.service.download_markdown",
+        lambda file_id, settings: calls.append(file_id) or "# Celery 文件\n\n正文。",
+    )
+    os.environ["OPENWIKI_SERVER_OPENWIKI"] = "0"
+    runtime.reset_runtime()
+    try:
+        rt_svc = runtime.get_service(str(tmp_path / "celery-file.db"))
+        wid = rt_svc.create_wiki(name="Celery File", kb_id="kb_celery_file")["wikiId"]
+        job = rt_svc.submit_job("build", wid, {"docId": "d-file"})
+        file_id = "7ad9d5f0-9d89-4f13-a8e5-0a8c1f6d3f59"
+
+        result = build_task.run(
+            wid,
+            doc_id="d-file",
+            markdown_file_id=file_id,
+            job_id=job["jobId"],
+        )
+        assert result["total"] == 1
+        assert calls == [file_id]
     finally:
         os.environ.pop("OPENWIKI_SERVER_OPENWIKI", None)
         runtime.reset_runtime()

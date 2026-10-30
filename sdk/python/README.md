@@ -1,7 +1,10 @@
 # openwiki-server-sdk
 
-OpenWiki Server **独立承载服务**（wiki 引擎作为独立进程/容器对外提供）的应用集成 SDK。**v0.1.0**，
-独立发布到 PyPI（`openwiki-server-sdk`，仅依赖 `httpx`）。
+OpenWiki Server **独立承载服务**（wiki 引擎作为独立进程/容器对外提供）的应用集成 SDK。**v0.2.0**，
+独立发布到 PyPI（`openwiki-server-sdk`，依赖 `httpx` + `ikc-sdk-lib==0.37.0`）。
+
+SDK + Celery 是主集成入口，HTTP 是 SDK 的传输面；服务端同时保留 gRPC / MCP / CLI。
+本 SDK 只负责 HTTP 传输、异常映射与旧类名兼容，Wiki 数据模型统一来自 `ikc_sdk.core`。
 
 设计文档：`docs/独立承载服务与SDK集成设计.md`（仓库根目录）。
 
@@ -74,6 +77,10 @@ asyncio.run(main())
 
 同步与异步客户端共享同一套模型与错误映射；`request`/`raw`/`fetch_openapi` 低层调用与重试语义一致。
 
+模型规范名可直接从 `ikc_sdk.core` 导入（引擎 DTO 使用 `WikiEngine*` 前缀，例如
+`WikiEngineMetaView` / `WikiPageView` / `WikiEngineJobView`）；
+本 SDK 的 `WikiMeta` / `WikiPageDetail` / `WikiJob` 等旧名保留为兼容别名。
+
 ## 环境变量引导
 
 ```bash
@@ -134,7 +141,7 @@ python sdk/python/examples/async_quickstart.py
 ## 自测
 
 ```bash
-cd sdk/python && PYTHONPATH=. python -m pytest tests -q
+PYTHONPATH=/home/sharkyai/ikc-sdk-lib/src:sdk/python .venv/bin/python -m pytest sdk/python/tests -q
 ```
 
 > 测试基于 `httpx.MockTransport`，无需起真实服务。

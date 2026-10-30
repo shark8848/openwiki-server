@@ -9,6 +9,14 @@ from __future__ import annotations
 from typing import Any
 
 from ikc_sdk.celery import CeleryFactory
+from ikc_sdk.core.queues import (
+    TASK_OPENWIKI_BUILD,
+    TASK_OPENWIKI_DEPRECATE_DOC,
+    TASK_OPENWIKI_EXPORT,
+    TASK_OPENWIKI_INGEST,
+    TASK_OPENWIKI_MERGE,
+    TASK_OPENWIKI_UPDATE,
+)
 
 from ..celery_tasks import handlers
 from ..config import Settings
@@ -35,13 +43,14 @@ celery_app.conf.update(
 )
 
 
-@celery_app.task(name="openwiki_server.build")
+@celery_app.task(name=TASK_OPENWIKI_BUILD)
 def build_task(
     wiki_id: str,
     doc_id: str = "",
     title: str = "",
     tags: list[str] | None = None,
     markdown: str = "",
+    markdown_file_id: str = "",
     wiki_config: dict[str, Any] | None = None,
     job_id: str = "",
 ) -> dict[str, Any]:
@@ -52,12 +61,13 @@ def build_task(
         title=title,
         tags=tags,
         markdown=markdown,
+        markdown_file_id=markdown_file_id,
         wiki_config=wiki_config,
         job_id=job_id,
     )
 
 
-@celery_app.task(name="openwiki_server.merge")
+@celery_app.task(name=TASK_OPENWIKI_MERGE)
 def merge_task(
     wiki_id: str,
     pages: list[dict[str, Any]] | None = None,
@@ -68,25 +78,25 @@ def merge_task(
     return handlers.merge(wiki_id, pages=pages, doc_id=doc_id, job_id=job_id)
 
 
-@celery_app.task(name="openwiki_server.deprecate_doc")
+@celery_app.task(name=TASK_OPENWIKI_DEPRECATE_DOC)
 def deprecate_doc_task(wiki_id: str, doc_id: str, job_id: str = "") -> dict[str, Any]:
     """按 docId 增量废弃任务。"""
     return handlers.deprecate_doc(wiki_id, doc_id=doc_id, job_id=job_id)
 
 
-@celery_app.task(name="openwiki_server.export")
+@celery_app.task(name=TASK_OPENWIKI_EXPORT)
 def export_task(wiki_id: str, format: str = "jsonl", job_id: str = "") -> dict[str, Any]:
     """导出任务。"""
     return handlers.export(wiki_id, format=format, job_id=job_id)
 
 
-@celery_app.task(name="openwiki_server.update")
+@celery_app.task(name=TASK_OPENWIKI_UPDATE)
 def update_task(wiki_id: str, message: str = "", job_id: str = "") -> dict[str, Any]:
     """OpenWiki 全量刷新任务。"""
     return handlers.update(wiki_id, message=message, job_id=job_id)
 
 
-@celery_app.task(name="openwiki_server.ingest")
+@celery_app.task(name=TASK_OPENWIKI_INGEST)
 def ingest_task(wiki_id: str, connector: str, job_id: str = "") -> dict[str, Any]:
     """连接器摄取任务。"""
     return handlers.ingest(wiki_id, connector=connector, job_id=job_id)

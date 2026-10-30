@@ -9,11 +9,12 @@ import json
 import sys
 from typing import Any, Callable
 
+from .. import __version__
 from ..errors import OpenWikiError
 from ..protocol import error, new_trace_id, ok
 from ..runtime import get_service
 
-SERVER_INFO = {"name": "openwiki-server", "version": "0.2.0"}
+SERVER_INFO = {"name": "openwiki-server", "version": __version__}
 PROTOCOL_VERSION = "2025-03-26"
 
 
@@ -46,7 +47,7 @@ TOOLS: list[dict[str, Any]] = [
     {"name": "wiki_search", "description": "页面检索（q + tag 过滤）", "inputSchema": {"type": "object", "properties": {"wikiId": {"type": "string"}, "q": {"type": "string"}, "tag": {"type": "string"}, "limit": {"type": "integer"}}, "required": ["wikiId"]}},
     {"name": "wiki_stat", "description": "wiki 统计", "inputSchema": {"type": "object", "properties": {"wikiId": {"type": "string"}}, "required": ["wikiId"]}},
     {"name": "wiki_export", "description": "导出页面（jsonl/json）", "inputSchema": {"type": "object", "properties": {"wikiId": {"type": "string"}, "format": {"type": "string"}}, "required": ["wikiId"]}},
-    {"name": "wiki_build", "description": "按文档建页（markdown + title + tags + wikiConfig）", "inputSchema": {"type": "object", "properties": {"wikiId": {"type": "string"}, "docId": {"type": "string"}, "title": {"type": "string"}, "tags": {"type": "array"}, "markdown": {"type": "string"}, "wikiConfig": {"type": "object"}}, "required": ["wikiId"]}},
+    {"name": "wiki_build", "description": "按文档建页（markdown 或 markdownFileId + title + tags + wikiConfig）", "inputSchema": {"type": "object", "properties": {"wikiId": {"type": "string"}, "docId": {"type": "string"}, "title": {"type": "string"}, "tags": {"type": "array"}, "markdown": {"type": "string"}, "markdownFileId": {"type": "string"}, "wikiConfig": {"type": "object"}}, "required": ["wikiId"]}},
     {"name": "wiki_merge", "description": "页面记录增量合并", "inputSchema": {"type": "object", "properties": {"wikiId": {"type": "string"}, "pages": {"type": "array"}, "docId": {"type": "string"}}, "required": ["wikiId"]}},
     {"name": "wiki_deprecate_doc", "description": "按 docId 增量废弃", "inputSchema": {"type": "object", "properties": {"wikiId": {"type": "string"}, "docId": {"type": "string"}}, "required": ["wikiId", "docId"]}},
     {"name": "wiki_update", "description": "OpenWiki 全量刷新（LLM 合成）", "inputSchema": {"type": "object", "properties": {"wikiId": {"type": "string"}, "message": {"type": "string"}}, "required": ["wikiId"]}},
@@ -80,6 +81,7 @@ def _tool_handlers(service: Any) -> dict[str, Callable[..., dict[str, Any]]]:
             title=str(p.get("title") or ""),
             tags=p.get("tags") or [],
             markdown=str(p.get("markdown") or ""),
+            markdown_file_id=str(p.get("markdownFileId") or ""),
             wiki_config=p.get("wikiConfig"),
         ),
         "wiki_merge": lambda p: service.merge_records(str(p.get("wikiId") or ""), pages=p.get("pages") or [], doc_id=str(p.get("docId") or "")),

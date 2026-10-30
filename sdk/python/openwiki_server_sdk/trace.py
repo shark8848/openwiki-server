@@ -1,16 +1,6 @@
 from __future__ import annotations
 
-import secrets
-import time
-
-_TRACE_ID_DIGITS = 23
-
-
-def generate_trace_id() -> str:
-    """生成 23 位纯数字 traceId（13 位毫秒时间戳 + 10 位随机数），与服务端 X-Trace-Id 对齐。"""
-    timestamp_ms = int(time.time() * 1000)
-    random_digits = secrets.randbelow(10**10)
-    return f"{timestamp_ms:013d}{random_digits:010d}"
+from ikc_sdk.core.trace import generate_trace_id
 
 
 def ensure_trace_id(trace_id: str | None) -> str:
@@ -18,3 +8,6 @@ def ensure_trace_id(trace_id: str | None) -> str:
     if trace_id:
         return str(trace_id)
     return generate_trace_id()
+
+
+__all__ = ["ensure_trace_id", "generate_trace_id"]

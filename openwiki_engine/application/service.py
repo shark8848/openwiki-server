@@ -10,6 +10,8 @@ from dataclasses import replace
 from pathlib import Path
 from typing import Any
 
+from ikc_sdk.core.queues import OPENWIKI_TASK_BY_OP
+
 from ..adapters.openwiki import (
     _extract_links,
     generate_pages_rule,
@@ -19,6 +21,7 @@ from ..adapters.openwiki import (
     run_update,
 )
 from ..adapters import core_writeback
+from ..adapters.pyuploadx_source import download_markdown
 from ..config import Settings
 from ..domain.ids import normalize_title, page_id, stable_key_from_filename, wiki_id
 from ..domain.models import WikiMeta, WikiPageRecord
@@ -35,6 +38,7 @@ _TASK_FIELDS: dict[str, dict[str, str]] = {
         "title": "title",
         "tags": "tags",
         "markdown": "markdown",
+        "markdownFileId": "markdown_file_id",
         "wikiConfig": "wiki_config",
     },
     "merge": {"pages": "pages", "docId": "doc_id"},
@@ -132,11 +136,18 @@ class OpenWikiService:
         title: str = "",
         tags: list[str] | None = None,
         markdown: str = "",
+        markdown_file_id: str = "",
         wiki_config: dict[str, Any] | None = None,
     ) -> dict[str, Any]:
         """按文档建页：OpenWiki 内核合成（可用时）→ OKF 解析入库；否则规则切页降级。"""
         meta = self._require_wiki(wiki_id_value)
         config = validate_wiki_config({**meta.config, **(wiki_config or {})})
+        if bool(markdown.strip()) == bool(markdown_file_id.strip()):
+            raise InvalidParamsError(
+                "Markdown 原文与文件 ID 必须二选一", field="markdownFileId"
+            )
+        if markdown_file_id:
+            markdown = download_markdown(markdown_file_id, self.settings)
         mode = "rule"
         page_specs: list[dict[str, Any]] = []
 
@@ -422,14 +433,7 @@ class OpenWikiService:
         """登记后投递 Celery broker；broker 不可达时返回 False（保持 pending，可 run_job 手动执行）。"""
         from ..interfaces.celery_app import celery_app
 
-        task_name = {
-            "build": "openwiki_server.build",
-            "merge": "openwiki_server.merge",
-            "deprecate_doc": "openwiki_server.deprecate_doc",
-            "export": "openwiki_server.export",
-            "update": "openwiki_server.update",
-            "ingest": "openwiki_server.ingest",
-        }.get(task)
+        task_name = OPENWIKI_TASK_BY_OP.get(task)
         if task_name is None:
             return False
         fields = _TASK_FIELDS.get(task)
@@ -468,6 +472,7 @@ class OpenWikiService:
                     title=str(payload.get("title") or ""),
                     tags=payload.get("tags") or [],
                     markdown=str(payload.get("markdown") or ""),
+                    markdown_file_id=str(payload.get("markdownFileId") or ""),
                     wiki_config=payload.get("wikiConfig"),
                 )
             elif task == "merge":

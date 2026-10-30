@@ -44,10 +44,13 @@ if [[ -z "$VERSION" || -z "$OPENWIKI_VERSION" ]]; then
 fi
 IMAGE_TAG="${IMAGE_TAG:-ikc-openwiki-server:${VERSION}}"
 
-# 预置本地固定 wheel（IKC Log Center SDK：远程日志投递）：版本唯一来源 = pyproject.toml 的
-# log-center extra 的 == pin，wheel 文件名按 pin 派生；镜像 Dockerfile 第一步安装（离线构建）。
+# 预置本地固定 wheel：ikc-sdk-lib（Wiki 共享契约）+ IKC Log Center SDK（远程日志投递）
+# + PyUploadX SDK（按 markdownFileId 下载 Wiki 原文）。
+# 版本唯一来源 = pyproject.toml 的 == pin，wheel 文件名按 pin 派生；镜像 Dockerfile 先安装。
 WHEELS_DIR="docker/wheels"
 IKC_LOG_CENTER_DIST="${IKC_LOG_CENTER_DIST:-/home/ikc-log-center/dist}"
+IKC_SDK_DIST="${IKC_SDK_DIST:-/home/sharkyai/ikc-sdk-lib/dist}"
+PYUPLOADX_DIST="${PYUPLOADX_DIST:-/home/sharkyai/PyUploadX/dist}"
 LOG_CENTER_VERSION="$(sed -n 's/^[[:space:]]*"ikc-log-center-sdk==\([^"]*\)",.*/\1/p' pyproject.toml | head -1)"
 if [[ -z "$LOG_CENTER_VERSION" ]]; then
   echo "[wheel] pyproject.toml 未找到 ikc-log-center-sdk 的 == 固定版本 pin" >&2
@@ -55,6 +58,33 @@ if [[ -z "$LOG_CENTER_VERSION" ]]; then
 fi
 rm -rf "$WHEELS_DIR"
 mkdir -p "$WHEELS_DIR"
+
+IKC_SDK_VERSION="$(sed -n 's/^[[:space:]]*"ikc-sdk-lib==\([^"]*\)",.*/\1/p' pyproject.toml | head -1)"
+if [[ -z "$IKC_SDK_VERSION" ]]; then
+  echo "[wheel] pyproject.toml 未找到 ikc-sdk-lib 的 == 固定版本 pin" >&2
+  exit 1
+fi
+IKC_SDK_WHEEL="ikc_sdk_lib-${IKC_SDK_VERSION}-py3-none-any.whl"
+if [[ ! -f "$IKC_SDK_DIST/$IKC_SDK_WHEEL" ]]; then
+  echo "[wheel] 缺少 $IKC_SDK_DIST/$IKC_SDK_WHEEL（先在该仓构建/发布）" >&2
+  exit 1
+fi
+cp "$IKC_SDK_DIST/$IKC_SDK_WHEEL" "$WHEELS_DIR/$IKC_SDK_WHEEL"
+echo "[wheel] 就绪: $WHEELS_DIR/$IKC_SDK_WHEEL"
+
+PYUPLOADX_VERSION="$(sed -n 's/^[[:space:]]*"pyuploadx==\([^"]*\)",.*/\1/p' pyproject.toml | head -1)"
+if [[ -z "$PYUPLOADX_VERSION" ]]; then
+  echo "[wheel] pyproject.toml 未找到 pyuploadx 的 == 固定版本 pin" >&2
+  exit 1
+fi
+PYUPLOADX_WHEEL="pyuploadx-${PYUPLOADX_VERSION}-py3-none-any.whl"
+if [[ ! -f "$PYUPLOADX_DIST/$PYUPLOADX_WHEEL" ]]; then
+  echo "[wheel] 缺少 $PYUPLOADX_DIST/$PYUPLOADX_WHEEL（先构建/获取 PyUploadX SDK wheel）" >&2
+  exit 1
+fi
+cp "$PYUPLOADX_DIST/$PYUPLOADX_WHEEL" "$WHEELS_DIR/$PYUPLOADX_WHEEL"
+echo "[wheel] 就绪: $WHEELS_DIR/$PYUPLOADX_WHEEL"
+
 LOG_CENTER_WHEEL="ikc_log_center_sdk-${LOG_CENTER_VERSION}-py3-none-any.whl"
 if [[ ! -f "$IKC_LOG_CENTER_DIST/$LOG_CENTER_WHEEL" ]]; then
   echo "[wheel] 缺少 $IKC_LOG_CENTER_DIST/$LOG_CENTER_WHEEL（先在该仓构建/发布）" >&2
