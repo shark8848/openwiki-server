@@ -17,7 +17,7 @@
 - 配置样例：`config/engine.example.yaml`（全部可用环境变量覆盖）
 - 命令行测试与调用指南：`docs/命令行测试与调用指南.md`（五类接口全部命令，已用仓库真实文档实测）
 - 独立承载服务与 SDK 集成设计：`docs/独立承载服务与SDK集成设计.md`（应用侧快速集成）
-- 共享契约来源：`ikc-sdk-lib 0.37.0`（`ikc_sdk.core`：Wiki 模型、`wikiConfig`、合并规则、回写项、Celery 载荷与任务名）
+- 共享契约来源：`ikc-sdk-lib 0.41.0`（`ikc_sdk.core`：Wiki 模型、`wikiConfig`、合并规则、回写项、Celery 载荷、TM 任务 DTO 与接入点映射）
 
 ## 安装（PyPI）
 
@@ -57,7 +57,7 @@ cp config/pypi.env.example config/pypi.env   # 填入 OPENWIKI_PYPI_TOKEN
 # 依赖：本仓自带 venv（**不要**复用别的仓库的 venv——对方解释器可能缺 redis-py，
 # 会让 HTTP/worker 的 celery 投递静默失败，作业只登记不投递、永远停在 pending）
 python3 -m venv .venv
-.venv/bin/python -m pip install -e /home/sharkyai/ikc-sdk-lib   # 共享契约 0.37.0（发布前用本地源码）
+.venv/bin/python -m pip install -e /home/sharkyai/ikc-sdk-lib   # 共享契约 0.41.0（发布前用本地源码）
 .venv/bin/python -m pip install -e '.[server,dev]'      # 含 HTTP/worker 全部依赖 + 队列依赖组（见「安装」小节的强制契约三条）
 
 # 启动 HTTP 服务（默认 18011）

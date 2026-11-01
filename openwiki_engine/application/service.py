@@ -26,7 +26,7 @@ from ..config import Settings
 from ..domain.ids import normalize_title, page_id, stable_key_from_filename, wiki_id
 from ..domain.models import WikiMeta, WikiPageRecord
 from ..domain.wiki_config import validate_wiki_config
-from ..errors import InvalidParamsError, NotFoundError
+from ..errors import ConflictError, InvalidParamsError, NotFoundError
 from ..persistence.sqlite_store import SqliteWikiStore
 
 logger = logging.getLogger(__name__)
@@ -100,6 +100,20 @@ class OpenWikiService:
 
     def get_wiki(self, wiki_id_value: str) -> dict[str, Any]:
         return self.store.get_wiki_or_raise(wiki_id_value).to_dict()
+
+    def ensure_wiki(self, wiki_id_value: str, *, kb_id: str, name: str = "") -> dict[str, Any]:
+        """幂等确保 wiki 记录存在（TM 直投 build 时没有 core 的建资源前置步骤）。"""
+        existing = self.store.get_wiki(wiki_id_value)
+        if existing is not None:
+            return existing.to_dict()
+        try:
+            return self.create_wiki(
+                wiki_id_value=wiki_id_value,
+                kb_id=kb_id,
+                name=name or wiki_id_value,
+            )
+        except ConflictError:
+            return self.store.get_wiki_or_raise(wiki_id_value).to_dict()
 
     def delete_wiki(self, wiki_id_value: str) -> dict[str, Any]:
         self.store.get_wiki_or_raise(wiki_id_value)

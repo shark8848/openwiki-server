@@ -87,6 +87,14 @@ def test_create_get_list_delete(svc):
         svc.get_wiki(created["wikiId"])
 
 
+def test_ensure_wiki_is_idempotent(svc):
+    first = svc.ensure_wiki("wiki_123456789abc", kb_id="kb_1")
+    second = svc.ensure_wiki("wiki_123456789abc", kb_id="kb_1")
+    assert first["wikiId"] == second["wikiId"] == "wiki_123456789abc"
+    assert first["kbId"] == "kb_1"
+    assert svc.list_wikis()["total"] == 1
+
+
 # ---------- build / merge / 查询 ----------
 
 
