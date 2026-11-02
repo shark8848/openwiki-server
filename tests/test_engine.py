@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import inspect
 import json
 from dataclasses import replace
 from pathlib import Path
@@ -540,6 +541,47 @@ def test_grpc(svc):
 
 
 # ---------- Celery ----------
+
+
+def test_celery_task_signatures_accept_common_kb_id():
+    from openwiki_engine.interfaces import celery_app as celery_mod
+
+    tasks = (
+        celery_mod.build_task,
+        celery_mod.merge_task,
+        celery_mod.deprecate_doc_task,
+        celery_mod.export_task,
+        celery_mod.update_task,
+        celery_mod.ingest_task,
+    )
+    for task in tasks:
+        assert "kb_id" in inspect.signature(task.run).parameters, task.name
+
+
+def test_celery_build_accepts_kb_id_for_first_build(tmp_path):
+    import os
+
+    from openwiki_engine import runtime
+    from openwiki_engine.interfaces.celery_app import build_task
+
+    os.environ["OPENWIKI_SERVER_OPENWIKI"] = "0"
+    os.environ["OPENWIKI_SERVER_DATA_DIR"] = str(tmp_path / "data")
+    runtime.reset_runtime()
+    try:
+        rt_svc = runtime.get_service(str(tmp_path / "celery-kb-id.db"))
+        wid = wiki_id("kb_celery_native")
+        result = build_task.run(
+            wid,
+            kb_id="kb_celery_native",
+            doc_id="d-native",
+            markdown="# 原生 Celery\n\n正文。",
+        )
+        assert result["wikiId"] == wid
+        assert rt_svc.get_wiki(wid)["kbId"] == "kb_celery_native"
+    finally:
+        os.environ.pop("OPENWIKI_SERVER_OPENWIKI", None)
+        os.environ.pop("OPENWIKI_SERVER_DATA_DIR", None)
+        runtime.reset_runtime()
 
 
 def test_celery_tasks(tmp_path):

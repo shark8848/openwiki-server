@@ -1,6 +1,6 @@
 # AGENTS.md
 
-## Wiki 共享契约边界（2026-11-02，0.3.6 / SDK 0.2.0 / shared 0.42.0）
+## Wiki 共享契约边界（2026-11-02，0.3.7 / SDK 0.2.0 / shared 0.42.0）
 
 - 跨仓单一来源：`ikc-sdk-lib 0.42.0` 的 `ikc_sdk.core` 定义 Wiki 稳定 ID、`wikiConfig`、页面合并规则、
   `WikiEngine*` 引擎 DTO、core `WikiPageWriteItem`、六个 Celery 任务名/队列/载荷与 `WIKI_TM_API_BY_TASK`。
