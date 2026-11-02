@@ -3,8 +3,8 @@
 > 版本：1.1.0（文档版本；SDK 包版本 0.2.0）
 > 状态：0.2.0 源码已落地，待发布
 > 发布形态：SDK 独立发布到 PyPI（`pip install openwiki-server-sdk`，v0.2.0，依赖 `httpx` +
-> `ikc-sdk-lib==0.41.0`），
-> 与主包 `openwiki-server`（v0.3.5+，不再内嵌 SDK）解耦。
+> `ikc-sdk-lib==0.42.0`），
+> 与主包 `openwiki-server`（v0.3.6+，不再内嵌 SDK）解耦。
 > 适用范围：面向外部应用的集成客户端 SDK；openwiki-server 作为**独立承载服务**（独立进程/容器，
 > 对外暴露 HTTP 18011 / gRPC 50052）运行，应用侧通过本 SDK 快速集成 wiki 能力。
 > 参考 open-ikc 的 SDK 定义（`/home/open-ikc/sdk/python`，`open-ikc-sdk`）：

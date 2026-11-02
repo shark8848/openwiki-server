@@ -40,6 +40,7 @@ _TASK_FIELDS: dict[str, dict[str, str]] = {
         "markdown": "markdown",
         "markdownFileId": "markdown_file_id",
         "wikiConfig": "wiki_config",
+        "modelId": "model_id",
     },
     "merge": {"pages": "pages", "docId": "doc_id"},
     "deprecate_doc": {"docId": "doc_id"},
@@ -152,6 +153,7 @@ class OpenWikiService:
         markdown: str = "",
         markdown_file_id: str = "",
         wiki_config: dict[str, Any] | None = None,
+        model_id: str = "",
     ) -> dict[str, Any]:
         """按文档建页：OpenWiki 内核合成（可用时）→ OKF 解析入库；否则规则切页降级。"""
         meta = self._require_wiki(wiki_id_value)
@@ -180,7 +182,7 @@ class OpenWikiService:
             update = run_update(
                 wiki_root,
                 provider=self.settings.openwiki_provider,
-                model_id=self.settings.openwiki_model_id,
+                model_id=model_id.strip() or self.settings.openwiki_model_id,
                 message=message,
                 timeout=self.settings.openwiki_update_timeout,
                 settings=self.settings,
@@ -488,6 +490,7 @@ class OpenWikiService:
                     markdown=str(payload.get("markdown") or ""),
                     markdown_file_id=str(payload.get("markdownFileId") or ""),
                     wiki_config=payload.get("wikiConfig"),
+                    model_id=str(payload.get("modelId") or ""),
                 )
             elif task == "merge":
                 result = self.merge_records(

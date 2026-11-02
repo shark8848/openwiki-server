@@ -61,6 +61,7 @@ def test_build_accepts_tm_envelope_and_reports_lifecycle(fake):
                 "kb_id": "kb-1",
                 "doc_id": "d-1",
                 "markdown": "# 标题",
+                "model_id": "task-model",
                 "taskId": "task-1",
                 "taskStrategy": {"priority": 2},
             },
@@ -82,6 +83,7 @@ def test_build_accepts_tm_envelope_and_reports_lifecycle(fake):
                 "markdown": "# 标题",
                 "markdown_file_id": "",
                 "wiki_config": {},
+                "model_id": "task-model",
             },
         )
     ]

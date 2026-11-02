@@ -195,6 +195,7 @@ def create_app(service: Any | None = None) -> FastAPI:
                 markdown=str(payload.get("markdown") or ""),
                 markdown_file_id=str(payload.get("markdownFileId") or ""),
                 wiki_config=payload.get("wikiConfig"),
+                model_id=str(payload.get("modelId") or ""),
             ),
         )
 

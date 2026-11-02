@@ -212,6 +212,9 @@ def build(
         "", "--markdown-file-id", "--file-id",
         help="PyUploadX file_id（与 --markdown 二选一）",
     ),
+    model_id: str = typer.Option(
+        "", "--model-id", help="任务级模型 ID；空 = 使用引擎缺省模型",
+    ),
     config_json: str = typer.Option("", "--config", help="任务级 wikiConfig JSON"),
 ) -> None:
     """按文档建页。"""
@@ -225,6 +228,7 @@ def build(
                 markdown=markdown,
                 markdown_file_id=file_id,
                 wiki_config=json.loads(config_json) if config_json else None,
+                model_id=model_id,
             )
         )
     except Exception as exc:

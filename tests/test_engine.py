@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+from dataclasses import replace
 from pathlib import Path
 
 import pytest
@@ -239,6 +240,36 @@ def test_build_from_doc_accepts_pyuploadx_file_id(svc, monkeypatch):
     assert calls and calls[0][0] == file_id
     assert result["total"] == 2
     assert any("来自文件" in page["markdown"] for page in result["pages"])
+
+
+def test_build_from_doc_uses_task_model_or_engine_default(store, tmp_path, monkeypatch):
+    settings = replace(
+        _settings(tmp_path),
+        openwiki_enabled=True,
+        openwiki_model_id="engine-default-model",
+    )
+    service = OpenWikiService(store, settings=settings)
+    wid = _create(service)["wikiId"]
+    calls: list[str] = []
+
+    monkeypatch.setattr(
+        "openwiki_engine.application.service.openwiki_available",
+        lambda _settings: True,
+    )
+    monkeypatch.setattr(
+        "openwiki_engine.application.service.run_update",
+        lambda _root, **kwargs: calls.append(kwargs["model_id"]) or {"ok": False},
+    )
+
+    service.build_from_doc(
+        wid,
+        doc_id="doc-explicit",
+        markdown="# 正文",
+        model_id="task-model",
+    )
+    service.build_from_doc(wid, doc_id="doc-default", markdown="# 正文")
+
+    assert calls == ["task-model", "engine-default-model"]
 
 
 @pytest.mark.parametrize(

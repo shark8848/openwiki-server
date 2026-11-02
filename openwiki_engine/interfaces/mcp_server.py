@@ -83,6 +83,7 @@ def _tool_handlers(service: Any) -> dict[str, Callable[..., dict[str, Any]]]:
             markdown=str(p.get("markdown") or ""),
             markdown_file_id=str(p.get("markdownFileId") or ""),
             wiki_config=p.get("wikiConfig"),
+            model_id=str(p.get("modelId") or ""),
         ),
         "wiki_merge": lambda p: service.merge_records(str(p.get("wikiId") or ""), pages=p.get("pages") or [], doc_id=str(p.get("docId") or "")),
         "wiki_deprecate_doc": lambda p: service.deprecate_doc(str(p.get("wikiId") or ""), doc_id=str(p.get("docId") or "")),

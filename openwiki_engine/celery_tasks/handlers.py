@@ -201,6 +201,7 @@ def _build(data: dict[str, Any]) -> dict[str, Any]:
             markdown=_text(data, "markdown"),
             markdown_file_id=_text(data, "markdown_file_id", "markdownFileId"),
             wiki_config=data.get("wiki_config") or data.get("wikiConfig") or {},
+            model_id=_text(data, "model_id", "modelId"),
         ),
     )
 

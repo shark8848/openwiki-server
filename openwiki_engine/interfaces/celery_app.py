@@ -52,6 +52,7 @@ def build_task(
     markdown: str = "",
     markdown_file_id: str = "",
     wiki_config: dict[str, Any] | None = None,
+    model_id: str = "",
     job_id: str = "",
 ) -> dict[str, Any]:
     """按文档建页任务。"""
@@ -63,6 +64,7 @@ def build_task(
         markdown=markdown,
         markdown_file_id=markdown_file_id,
         wiki_config=wiki_config,
+        model_id=model_id,
         job_id=job_id,
     )
 

@@ -112,6 +112,7 @@ def _build_wiki(service, p: dict[str, Any]) -> dict[str, Any]:
         markdown=str(p.get("markdown") or ""),
         markdown_file_id=str(p.get("markdownFileId") or ""),
         wiki_config=p.get("wikiConfig"),
+        model_id=str(p.get("modelId") or ""),
     )
 
 
