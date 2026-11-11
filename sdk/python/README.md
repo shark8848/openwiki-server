@@ -1,7 +1,7 @@
 # openwiki-server-sdk
 
-OpenWiki Server **独立承载服务**（wiki 引擎作为独立进程/容器对外提供）的应用集成 SDK。**v0.2.0**，
-独立发布到 PyPI（`openwiki-server-sdk`，依赖 `httpx` + `ikc-sdk-lib==0.37.0`）。
+OpenWiki Server **独立承载服务**（wiki 引擎作为独立进程/容器对外提供）的应用集成 SDK。**v0.2.1**，
+独立发布到 PyPI（`openwiki-server-sdk`，依赖 `httpx` + `ikc-sdk-lib==0.45.0`）。
 
 SDK + Celery 是主集成入口，HTTP 是 SDK 的传输面；服务端同时保留 gRPC / MCP / CLI。
 本 SDK 只负责 HTTP 传输、异常映射与旧类名兼容，Wiki 数据模型统一来自 `ikc_sdk.core`。
