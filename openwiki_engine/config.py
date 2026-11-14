@@ -60,9 +60,11 @@ class Settings:
     openwiki_provider: str = field(
         default_factory=lambda: _env("OPENWIKI_SERVER_PROVIDER", "openai")
     )
-    # 默认模型与本地 LLM 网关可用模型对齐；可用 OPENWIKI_SERVER_MODEL_ID 覆盖
+    # 默认模型与本地 LLM 网关可用模型对齐；可用 OPENWIKI_SERVER_MODEL_ID 覆盖。
+    # 注意：IKC 6.0 站点（sitech-31）的 aiproxy 上 deepseek-v4-flash 无后端服务，
+    # 缺省值必须是实际可用的 chat 模型，否则 Wiki 会整批回落 rule。
     openwiki_model_id: str = field(
-        default_factory=lambda: _env("OPENWIKI_SERVER_MODEL_ID", "deepseek-v4-flash")
+        default_factory=lambda: _env("OPENWIKI_SERVER_MODEL_ID", "qwen3-30b-a3b")
     )
     openwiki_update_timeout: int = field(
         default_factory=lambda: int(_env("OPENWIKI_SERVER_UPDATE_TIMEOUT", "600"))

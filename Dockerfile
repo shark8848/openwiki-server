@@ -33,6 +33,12 @@ ARG OPENWIKI_VERSION=0.3.3
 RUN npm install -g "openwiki@${OPENWIKI_VERSION}" \
     && npm ls -g openwiki
 
+# 文档摄入不需要 OpenWiki 的 connector 工具；且 0.3.3 在 deepagents 中间件下会把任何
+# 工具异常当成致命错误——模型一旦调用未配置的 custom-mcp，整次 update 直接 rc=1、
+# 引擎静默回落 rule。这里给工具工厂加一个运行期开关，引擎默认注入
+# OPENWIKI_DISABLE_CONNECTORS=1（见 openwiki_engine/adapters/openwiki.py）。
+RUN node -e "const fs=require('fs');const p='/usr/local/lib/node_modules/openwiki/dist/connectors/tools.js';let s=fs.readFileSync(p,'utf8');const from='if (outputMode === \"repository\") {';if(!s.includes('OPENWIKI_DISABLE_CONNECTORS')){if(!s.includes(from)){console.error('openwiki tools.js 结构变化，补丁未应用');process.exit(1);}s=s.replace(from,'if (outputMode === \"repository\" || process.env.OPENWIKI_DISABLE_CONNECTORS === \"1\") {');fs.writeFileSync(p,s);}"
+
 WORKDIR /app
 COPY pyproject.toml README.md ./
 COPY openwiki_engine/ ./openwiki_engine/

@@ -16,7 +16,7 @@ import os
 import re
 import shutil
 import subprocess
-from datetime import date, datetime
+from datetime import date, datetime, timezone
 from pathlib import Path
 from typing import Any
 
@@ -59,6 +59,59 @@ def openwiki_available(settings: Settings | None = None) -> bool:
     return shutil.which(binary) is not None
 
 
+def _update_log_path(wiki_root: str, started: datetime) -> Path:
+    """每次 update 一份完整日志：stderr 只留尾部 2000 字符时，真实堆栈仍可回查。"""
+    stamp = started.astimezone(timezone.utc).strftime("%Y%m%dT%H%M%S%fZ")
+    return Path(wiki_root) / ".openwiki" / "logs" / f"update-{stamp}.log"
+
+
+def _write_update_log(
+    wiki_root: str,
+    started: datetime,
+    *,
+    argv: list[str],
+    returncode: int | None,
+    stdout: str = "",
+    stderr: str = "",
+    note: str = "",
+) -> Path:
+    path = _update_log_path(wiki_root, started)
+    try:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(
+            "\n".join(
+                [
+                    f"argv: {argv}",
+                    f"returncode: {returncode}",
+                    *([f"note: {note}"] if note else []),
+                    "--- stdout ---",
+                    stdout,
+                    "--- stderr ---",
+                    stderr,
+                    "",
+                ]
+            ),
+            encoding="utf-8",
+        )
+    except OSError as exc:  # 数据卷只读时不影响主流程，仅降级为告警
+        logger.warning("openwiki update 日志写入失败（%s）：%s", path, exc)
+    return path
+
+
+def _classify_failure(stderr: str, stdout: str) -> str:
+    """把常见失败归一成类别，便于日志检索与体检断言。"""
+    text = f"{stderr}\n{stdout}".lower()
+    if "mcp connector is not enabled" in text or "connector is not enabled" in text:
+        return "connector"
+    if "received empty response" in text or "empty response from chat model" in text:
+        return "empty-model-output"
+    if "timed out" in text or "timeout" in text:
+        return "timeout"
+    if "401" in text or "403" in text or "unauthorized" in text:
+        return "auth"
+    return "unknown"
+
+
 def run_update(
     wiki_root: str,
     *,
@@ -71,6 +124,7 @@ def run_update(
     """运行 `openwiki personal --update <message>`（非交互，stdin 关闭自动退出）。"""
     wiki_root = os.path.abspath(wiki_root)
     binary = openwiki_bin(settings)
+    started = datetime.now(timezone.utc)
     cmd = [binary, "personal", "--update"]
     if message:
         cmd.append(message)
@@ -80,6 +134,10 @@ def run_update(
             "HOME": wiki_root,
             "OPENWIKI_TELEMETRY_DISABLED": "1",
             "OPENWIKI_PROVIDER": provider,
+            # 站点只做文档摄入：connector 工具既用不到，未配置时还会把整次 update 打成 rc=1
+            # （openwiki 0.3.3 在 deepagents 中间件下把工具异常当致命错误）。显式关掉，
+            # 不依赖镜像内的包装脚本。
+            "OPENWIKI_DISABLE_CONNECTORS": env.get("OPENWIKI_DISABLE_CONNECTORS", "1"),
         }
     )
     if model_id:
@@ -97,17 +155,41 @@ def run_update(
         )
     except subprocess.TimeoutExpired:
         logger.warning("openwiki update 超时（%ss）：%s", timeout, wiki_root)
-        return {"ok": False, "reason": f"openwiki update 超时（{timeout}s）", "returncode": -1}
+        log_path = _write_update_log(
+            wiki_root, started, argv=cmd, returncode=-1, note=f"timeout {timeout}s"
+        )
+        return {
+            "ok": False,
+            "reason": f"openwiki update 超时（{timeout}s）",
+            "returncode": -1,
+            "failure": "timeout",
+            "log": str(log_path),
+        }
     except FileNotFoundError:
         return {"ok": False, "reason": "openwiki 可执行文件不存在", "returncode": -1}
     ok_flag = proc.returncode == 0
+    log_path = _write_update_log(
+        wiki_root,
+        started,
+        argv=cmd,
+        returncode=proc.returncode,
+        stdout=proc.stdout or "",
+        stderr=proc.stderr or "",
+    )
+    failure = "" if ok_flag else _classify_failure(proc.stderr or "", proc.stdout or "")
     if not ok_flag:
         logger.warning(
-            "openwiki update 失败 rc=%s：%s", proc.returncode, (proc.stderr or proc.stdout)[-2000:]
+            "openwiki update 失败 rc=%s failure=%s log=%s：%s",
+            proc.returncode,
+            failure,
+            log_path,
+            (proc.stderr or proc.stdout)[-2000:],
         )
     return {
         "ok": ok_flag,
         "returncode": proc.returncode,
+        "failure": failure,
+        "log": str(log_path),
         "stdout": (proc.stdout or "")[-4000:],
         "stderr": (proc.stderr or "")[-4000:],
     }
